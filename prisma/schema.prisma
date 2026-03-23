@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // Dev local e VPS: SQLite (DATABASE_URL="file:./dev.db")
+  // Vercel/serverless: troque para "postgresql" e use DATABASE_URL do Neon/Supabase
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   @default("CLIENT") // ADMIN | CLIENT
+  client    Client?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Client {
+  id            String        @id @default(cuid())
+  name          String
+  instanceName  String
+  evoUrl        String
+  apiKey        String
+  phone         String?
+  webhookToken  String        @unique @default(cuid()) // token para o n8n criar agendamentos
+  userId        String        @unique
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments  Appointment[]
+  campaigns     Campaign[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Appointment {
+  id            String         @id @default(cuid())
+  title         String
+  customerName  String
+  customerPhone String
+  scheduledAt   DateTime
+  notes         String?
+  status        String         @default("SCHEDULED") // SCHEDULED | DONE | CANCELLED
+  clientId      String
+  client        Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Notification {
+  id            String      @id @default(cuid())
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  type          String      // 24H | 3H | 1H | 15MIN
+  scheduledAt   DateTime
+  sentAt        DateTime?
+  status        String      @default("PENDING") // PENDING | SENT | FAILED
+  error         String?
+  createdAt     DateTime    @default(now())
+}
+
+// ── Campanhas de disparo em massa ──────────────────────────────────────────────
+
+model Campaign {
+  id              String            @id @default(cuid())
+  title           String
+  description     String?
+  scheduledAt     DateTime
+  messageTemplate String
+  status          String            @default("DRAFT") // DRAFT | SENDING | SENT | CANCELLED
+  isRecurring     Boolean           @default(false)
+  recurDays       Int?
+  clientId        String
+  client          Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  contacts        CampaignContact[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model CampaignContact {
+  id            String    @id @default(cuid())
+  campaignId    String
+  campaign      Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  name          String
+  phone         String
+  dispatchOrder Int
+  status        String    @default("PENDING") // PENDING | QUEUED | SENT | FAILED | CONFIRMED | DECLINED
+  sentAt        DateTime?
+  confirmedAt   DateTime?
+  error         String?
+  appointmentId String?
+  createdAt     DateTime  @default(now())
+}

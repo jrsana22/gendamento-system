@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: agendamentos
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/agendamentos
+      NEXT_PUBLIC_APP_URL: https://agendamento.solucoesdeia.com
+      JWT_SECRET: ${JWT_SECRET}
+      CRON_SECRET: ${CRON_SECRET}
+      NODE_ENV: production
+    ports:
+      - '3000:3000'
+
+  # Worker de cron — só necessário em VPS (no Vercel o cron é nativo)
+  cron:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - app
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/agendamentos
+      NEXT_PUBLIC_APP_URL: http://app:3000
+      CRON_SECRET: ${CRON_SECRET}
+      NODE_ENV: production
+    command: npx tsx src/cron-worker.ts
+
+volumes:
+  postgres_data:

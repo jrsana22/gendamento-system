@@ -1,0 +1,51 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getSession } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+import { scheduleNotifications } from '@/lib/notifications'
+
+// GET /api/appointments - agendamentos do cliente logado
+export async function GET() {
+  const session = await getSession()
+  if (!session?.clientId) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+
+  const appointments = await prisma.appointment.findMany({
+    where: { clientId: session.clientId },
+    include: { notifications: { orderBy: { scheduledAt: 'asc' } } },
+    orderBy: { scheduledAt: 'asc' },
+  })
+
+  return NextResponse.json(appointments)
+}
+
+// POST /api/appointments - cria novo agendamento
+export async function POST(req: NextRequest) {
+  const session = await getSession()
+  if (!session?.clientId) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
+
+  const { title, customerName, customerPhone, scheduledAt, notes } = await req.json()
+
+  if (!title || !customerName || !customerPhone || !scheduledAt) {
+    return NextResponse.json({ error: 'Preencha todos os campos obrigatórios' }, { status: 400 })
+  }
+
+  const date = new Date(scheduledAt)
+  if (date <= new Date()) {
+    return NextResponse.json({ error: 'A data deve ser no futuro' }, { status: 400 })
+  }
+
+  const appointment = await prisma.appointment.create({
+    data: {
+      title,
+      customerName,
+      customerPhone,
+      scheduledAt: date,
+      notes,
+      clientId: session.clientId,
+    },
+  })
+
+  // Agenda os lembretes automáticos
+  await scheduleNotifications(appointment.id, date)
+
+  return NextResponse.json(appointment, { status: 201 })
+}

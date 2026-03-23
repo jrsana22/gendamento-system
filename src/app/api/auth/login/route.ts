@@ -40,8 +40,6 @@ export async function POST(req: NextRequest) {
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7, // 7 dias
     path: '/',
-    // Em produção fixa o cookie no subdomínio exato
-    ...(isProd && { domain: 'agendamento.solucoesdeia.com' }),
   })
 
   return res

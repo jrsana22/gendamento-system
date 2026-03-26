@@ -14,15 +14,14 @@ export async function scheduleNotifications(appointmentId: string, scheduledAt: 
     { type: '15MIN', minutes: 15 },
   ]
 
-  const toCreate = offsets
-    .map(({ type, minutes }) => ({
-      appointmentId,
-      type,
-      scheduledAt: new Date(scheduledAt.getTime() - minutes * 60 * 1000),
-    }))
-    .filter(({ scheduledAt: t }) => t > now)
+  // Se o agendamento já passou, não cria nenhum lembrete
+  if (scheduledAt <= now) return
 
-  if (toCreate.length === 0) return
+  const toCreate = offsets.map(({ type, minutes }) => ({
+    appointmentId,
+    type,
+    scheduledAt: new Date(scheduledAt.getTime() - minutes * 60 * 1000),
+  }))
 
   await prisma.notification.createMany({ data: toCreate })
 }

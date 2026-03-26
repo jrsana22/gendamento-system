@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Phone, User, Search, ChevronDown, ChevronUp, Pencil, X, GripVertical, Archive, ChevronRight } from 'lucide-react'
+import { Phone, User, Search, ChevronDown, ChevronUp, Pencil, X, GripVertical, Archive, ChevronRight, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
   DndContext,
@@ -84,7 +84,7 @@ const INITIAL_SHOW = 5
 
 // ── Draggable Card ──────────────────────────────────────────────
 function DraggableCard({
-  appt, col, others, moving, onEdit, onMove, overlay = false,
+  appt, col, others, moving, onEdit, onMove, onDelete, overlay = false,
 }: {
   appt: Appointment
   col: typeof COLUMNS[0]
@@ -92,6 +92,7 @@ function DraggableCard({
   moving: string | null
   onEdit: (a: Appointment) => void
   onMove: (id: string, status: string) => void
+  onDelete: (id: string, name: string) => void
   overlay?: boolean
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: appt.id })
@@ -157,6 +158,12 @@ function DraggableCard({
               </button>
             )
           })}
+          <button
+            onClick={() => onDelete(appt.id, appt.customerName)}
+            className="ml-auto text-xs px-2 py-1 rounded-md font-medium text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors flex items-center gap-1"
+          >
+            <Trash2 className="h-3 w-3" />
+          </button>
         </div>
       )}
     </div>
@@ -165,7 +172,7 @@ function DraggableCard({
 
 // ── Droppable Column ────────────────────────────────────────────
 function DroppableColumn({
-  col, cards, moving, expanded, onToggleExpand, onEdit, onMove,
+  col, cards, moving, expanded, onToggleExpand, onEdit, onMove, onDelete,
 }: {
   col: typeof COLUMNS[0]
   cards: Appointment[]
@@ -174,6 +181,7 @@ function DroppableColumn({
   onToggleExpand: () => void
   onEdit: (a: Appointment) => void
   onMove: (id: string, status: string) => void
+  onDelete: (id: string, name: string) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: col.key })
   const others = COLUMNS.filter(c => c.key !== col.key)
@@ -234,6 +242,7 @@ function DroppableColumn({
                   moving={moving}
                   onEdit={onEdit}
                   onMove={onMove}
+                  onDelete={onDelete}
                 />
               ))}
             </div>
@@ -269,12 +278,13 @@ const COL_MOVE_LABEL: Record<string, string> = {
 }
 
 function MobileKanban({
-  filtered, moving, onEdit, onMove,
+  filtered, moving, onEdit, onMove, onDelete,
 }: {
   filtered: Appointment[]
   moving: string | null
   onEdit: (a: Appointment) => void
   onMove: (id: string, status: string) => void
+  onDelete: (id: string, name: string) => void
 }) {
   const [activeIdx, setActiveIdx] = useState(0)
 
@@ -344,7 +354,7 @@ function MobileKanban({
                   >
                     <Pencil className="h-3.5 w-3.5" /> Editar
                   </button>
-                  {others.map((o, oi) => (
+                  {others.map((o) => (
                     <button
                       key={o.key}
                       disabled={moving === appt.id}
@@ -354,6 +364,12 @@ function MobileKanban({
                       {COL_MOVE_LABEL[o.key]}
                     </button>
                   ))}
+                  <button
+                    onClick={() => onDelete(appt.id, appt.customerName)}
+                    className="px-3 py-2.5 border-l border-gray-100 dark:border-slate-800 text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center justify-center"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
             ))}
@@ -414,6 +430,17 @@ export default function CRMPage() {
     setSaving(false)
     if (res.ok) { toast.success('Agendamento atualizado'); setEditingAppt(null); fetchAppointments() }
     else { const d = await res.json(); toast.error(d.error || 'Erro ao atualizar') }
+  }
+
+  async function handleDelete(id: string, name: string) {
+    if (!confirm(`Excluir o lead "${name}"?`)) return
+    const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      toast.success('Lead excluído')
+      fetchAppointments()
+    } else {
+      toast.error('Erro ao excluir')
+    }
   }
 
   async function moveCard(id: string, newStatus: string) {
@@ -525,6 +552,7 @@ export default function CRMPage() {
             onToggleExpand={() => setExpanded(e => ({ ...e, [col.key]: !e[col.key] }))}
             onEdit={openEdit}
             onMove={moveCard}
+            onDelete={handleDelete}
           />
         ))}
       </div>
@@ -535,6 +563,7 @@ export default function CRMPage() {
         moving={moving}
         onEdit={openEdit}
         onMove={moveCard}
+        onDelete={handleDelete}
       />
     </div>
 

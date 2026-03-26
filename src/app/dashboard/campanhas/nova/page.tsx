@@ -119,15 +119,15 @@ export default function NovaCampanhaPage() {
           <Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4" /></Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Nova campanha</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Disparo em massa · 1 mensagem por minuto por contato</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Nova campanha</h1>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">Disparo em massa · 1 mensagem por minuto por contato</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Dados da campanha */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-          <h2 className="font-semibold text-gray-800">Dados do encontro</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 space-y-4">
+          <h2 className="font-semibold text-gray-800 dark:text-slate-200">Dados do encontro</h2>
           <Input label="Título do encontro *" value={form.title}
             onChange={(e) => set('title', e.target.value)}
             placeholder="ex: Reunião de Apresentação de Negócios" required />
@@ -141,10 +141,10 @@ export default function NovaCampanhaPage() {
           <div className="flex items-start gap-3 pt-1">
             <input type="checkbox" id="recurring" checked={form.isRecurring}
               onChange={(e) => set('isRecurring', e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-            <label htmlFor="recurring" className="text-sm text-gray-700 cursor-pointer">
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500" />
+            <label htmlFor="recurring" className="text-sm text-gray-700 dark:text-slate-300 cursor-pointer">
               <span className="font-medium">Recorrência automática</span>
-              <span className="text-gray-500 block mt-0.5">
+              <span className="text-gray-500 dark:text-slate-400 block mt-0.5">
                 Ao terminar o disparo, cria a próxima campanha automaticamente
               </span>
             </label>
@@ -152,22 +152,22 @@ export default function NovaCampanhaPage() {
 
           {form.isRecurring && (
             <div className="ml-7">
-              <label className="text-sm font-medium text-gray-700">Repetir a cada</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Repetir a cada</label>
               <div className="flex items-center gap-2 mt-1">
                 <input type="number" min={1} max={365} value={form.recurDays}
                   onChange={(e) => set('recurDays', parseInt(e.target.value))}
-                  className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-                <span className="text-sm text-gray-600">dias (7 = semanal)</span>
+                  className="w-20 rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <span className="text-sm text-gray-600 dark:text-slate-400">dias (7 = semanal)</span>
               </div>
             </div>
           )}
         </div>
 
         {/* Template da mensagem */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 space-y-3">
           <div>
-            <h2 className="font-semibold text-gray-800">Mensagem de convite</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Variáveis disponíveis no template</p>
+            <h2 className="font-semibold text-gray-800 dark:text-slate-200">Mensagem de convite</h2>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Variáveis disponíveis no template</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -180,21 +180,21 @@ export default function NovaCampanhaPage() {
 
           <textarea rows={10} value={form.messageTemplate}
             onChange={(e) => set('messageTemplate', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-sm font-mono focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             required />
 
-          <div className="flex items-start gap-2 text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
+          <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 rounded-lg p-3">
             <Info className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />
             <p>Após o envio, quando o contato responder <strong>SIM</strong>, você confirma manualmente no painel e o sistema cria o agendamento com os 4 lembretes automáticos.</p>
           </div>
         </div>
 
         {/* Lista de contatos */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-semibold text-gray-800">Contatos</h2>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <h2 className="font-semibold text-gray-800 dark:text-slate-200">Contatos</h2>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
                 {contacts.filter((c) => c.name && c.phone).length} válidos
                 {contacts.length > 1 && ` · estimativa ${contacts.filter((c) => c.name && c.phone).length} min de disparo`}
               </p>
@@ -207,21 +207,21 @@ export default function NovaCampanhaPage() {
             </label>
           </div>
 
-          <div className="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
+          <div className="text-xs text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-800/50 rounded-lg px-3 py-2">
             Formato CSV: <code className="font-mono">nome,telefone</code> (WhatsApp com DDI, ex: 5511999999999)
           </div>
 
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {contacts.map((c, i) => (
               <div key={i} className="flex gap-2 items-start">
-                <span className="text-xs text-gray-400 mt-2.5 w-5 text-right flex-shrink-0">{i + 1}</span>
+                <span className="text-xs text-gray-400 dark:text-slate-500 mt-2.5 w-5 text-right flex-shrink-0">{i + 1}</span>
                 <Input placeholder="Nome completo" value={c.name}
                   onChange={(e) => setContact(i, 'name', e.target.value)} />
                 <Input placeholder="5511999999999" value={c.phone}
                   onChange={(e) => setContact(i, 'phone', e.target.value)} />
                 {contacts.length > 1 && (
                   <button type="button" onClick={() => removeContact(i)}
-                    className="mt-1.5 text-gray-400 hover:text-red-500 flex-shrink-0">
+                    className="mt-1.5 text-gray-400 dark:text-slate-500 hover:text-red-500 flex-shrink-0">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 )}

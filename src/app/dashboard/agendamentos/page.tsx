@@ -183,7 +183,7 @@ export default function AgendamentosPage() {
       </div>
 
       {loading ? (
-        <div className="py-16 text-center text-gray-400">Carregando...</div>
+        <div className="py-16 text-center text-gray-400 dark:text-slate-500">Carregando...</div>
       ) : appointments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-slate-500">
           <Calendar className="h-12 w-12 mb-3" />
@@ -215,7 +215,7 @@ export default function AgendamentosPage() {
           <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:border dark:border-slate-800">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-800">
               <h2 className="font-semibold text-gray-900 dark:text-white">Editar agendamento</h2>
-              <button onClick={() => setEditingAppt(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200">
+              <button onClick={() => setEditingAppt(null)} className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-200">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -287,7 +287,7 @@ function ApptSection({ title, appointments, expanded, setExpanded, updateStatus,
                 {appt.status === 'SCHEDULED' && (
                   <>
                     <Button size="sm" variant="ghost" title="Editar" onClick={() => onEdit(appt)}>
-                      <Pencil className="h-4 w-4 text-gray-500" />
+                      <Pencil className="h-4 w-4 text-gray-500 dark:text-slate-400" />
                     </Button>
                     <Button size="sm" variant="ghost" title="Concluído" onClick={() => updateStatus(appt.id, 'DONE')}>
                       <CheckCircle className="h-4 w-4 text-green-600" />

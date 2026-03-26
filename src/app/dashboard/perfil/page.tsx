@@ -54,7 +54,7 @@ export default function PerfilPage() {
     }
   }
 
-  if (loadingProfile) return <div className="flex items-center justify-center h-64 text-gray-400">Carregando...</div>
+  if (loadingProfile) return <div className="flex items-center justify-center h-64 text-gray-400 dark:text-slate-500">Carregando...</div>
 
   return (
     <div className="space-y-8 max-w-xl">
@@ -82,7 +82,7 @@ export default function PerfilPage() {
             label="Email"
             value={profile.email}
             disabled
-            className="bg-gray-50 text-gray-400 cursor-not-allowed"
+            className="bg-gray-50 dark:bg-slate-800/50 text-gray-400 dark:text-slate-500 cursor-not-allowed"
           />
           <Input
             label="Telefone (WhatsApp)"

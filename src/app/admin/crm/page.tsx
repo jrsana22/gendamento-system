@@ -117,15 +117,15 @@ export default function AdminCRMPage() {
     return matchAgent && matchSearch && matchFrom && matchTo
   })
 
-  if (loading) return <div className="flex items-center justify-center h-64 text-gray-400">Carregando...</div>
+  if (loading) return <div className="flex items-center justify-center h-64 text-gray-400 dark:text-slate-500">Carregando...</div>
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Acompanhamento de Leads</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Acompanhamento de Leads</h1>
+          <p className="text-gray-500 dark:text-slate-400 mt-1">
             {agentFilter === 'all'
               ? `Todos os agentes · ${appointments.length} leads`
               : `${agents.find(([id]) => id === agentFilter)?.[1]} · ${filtered.length} leads`}
@@ -137,11 +137,11 @@ export default function AdminCRMPage() {
       <div className="flex gap-3">
         {/* Agent filter */}
         <div className="relative">
-          <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
           <select
             value={agentFilter}
             onChange={(e) => setAgentFilter(e.target.value)}
-            className="pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white appearance-none"
+            className="pl-9 pr-8 py-2 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 appearance-none"
           >
             <option value="all">Todos os agentes</option>
             {agents.map(([id, name]) => (
@@ -152,30 +152,30 @@ export default function AdminCRMPage() {
 
         {/* Date filters */}
         <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
-          className="py-2 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" title="De" />
+          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" title="De" />
         <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
-          className="py-2 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" title="Até" />
+          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" title="Até" />
 
         {/* Search */}
         <div className="relative w-60">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
           <input
             type="text"
             placeholder="Buscar por nome ou telefone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
 
       {/* Mobile tabs */}
-      <div className="flex md:hidden border-b border-gray-200 overflow-x-auto">
+      <div className="flex md:hidden border-b border-gray-200 dark:border-slate-800 overflow-x-auto">
         {COLUMNS.map((col, i) => {
           const count = filtered.filter(a => a.status === col.key).length
           return (
             <button key={col.key} onClick={() => setActiveTab(i)}
-              className={`flex-shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === i ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500'}`}>
+              className={`flex-shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === i ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 dark:text-slate-400'}`}>
               {col.label} <span className="ml-1 text-xs font-bold">({count})</span>
             </button>
           )
@@ -208,14 +208,14 @@ export default function AdminCRMPage() {
             <div key={col.key} className={`rounded-xl border-2 ${colStyle[col.color]} flex flex-col`}>
               <div className={`rounded-t-xl px-4 py-3 flex items-center justify-between ${headerStyle[col.color]}`}>
                 <span className="font-semibold text-sm">{col.label}</span>
-                <span className="text-xs font-bold bg-white bg-opacity-60 rounded-full px-2 py-0.5">
+                <span className="text-xs font-bold bg-white dark:bg-slate-900 bg-opacity-60 rounded-full px-2 py-0.5">
                   {cards.length}
                 </span>
               </div>
 
               <div className="flex flex-col gap-2 p-3 flex-1">
                 {cards.length === 0 && (
-                  <p className="text-xs text-gray-400 text-center py-6">Nenhum contato</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500 text-center py-6">Nenhum contato</p>
                 )}
 
                 {visibleGroups.map(([dateKey, items]) => (
@@ -225,14 +225,14 @@ export default function AdminCRMPage() {
                     </div>
                     <div className="flex flex-col gap-2">
                       {items.map((appt) => (
-                        <div key={appt.id} className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 space-y-2">
+                        <div key={appt.id} className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm p-3 space-y-2">
                           <div className="flex items-start gap-2">
-                            <User className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                            <span className="text-sm font-semibold text-gray-900 leading-tight">
+                            <User className="h-4 w-4 text-gray-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">
                               {appt.customerName}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
                             <Phone className="h-3 w-3 flex-shrink-0" />
                             {appt.customerPhone}
                           </div>
@@ -243,9 +243,9 @@ export default function AdminCRMPage() {
                             </div>
                           )}
                           {appt.notes && (
-                            <p className="text-xs text-gray-400 italic truncate">{appt.notes}</p>
+                            <p className="text-xs text-gray-400 dark:text-slate-500 italic truncate">{appt.notes}</p>
                           )}
-                          <div className="flex flex-wrap gap-1 pt-1 border-t border-gray-100">
+                          <div className="flex flex-wrap gap-1 pt-1 border-t border-gray-100 dark:border-slate-800">
                             {others.map((o) => {
                               const currentIdx = COLUMNS.findIndex(c => c.key === col.key)
                               const targetIdx = COLUMNS.findIndex(c => c.key === o.key)
@@ -271,7 +271,7 @@ export default function AdminCRMPage() {
                 {allCards.length > INITIAL_SHOW && (
                   <button
                     onClick={() => setExpanded(e => ({ ...e, [colKey]: !isExpanded }))}
-                    className="flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 py-1 font-medium"
+                    className="flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300 py-1 font-medium"
                   >
                     {isExpanded
                       ? <><ChevronUp className="h-3 w-3" /> Ocultar</>
@@ -294,7 +294,7 @@ export default function AdminCRMPage() {
         return (
           <div key={col.key} className={`md:hidden rounded-xl border-2 ${colStyle[col.color]}`}>
             <div className="flex flex-col gap-2 p-3">
-              {cards.length === 0 && <p className="text-xs text-gray-400 text-center py-6">Nenhum contato</p>}
+              {cards.length === 0 && <p className="text-xs text-gray-400 dark:text-slate-500 text-center py-6">Nenhum contato</p>}
               {groups.map(([dateKey, items]) => (
                 <div key={dateKey}>
                   <div className={`text-xs font-semibold px-2 py-1 rounded-md mb-1 ${dateGroupStyle[col.color]}`}>
@@ -302,18 +302,18 @@ export default function AdminCRMPage() {
                   </div>
                   <div className="flex flex-col gap-2">
                     {items.map((appt) => (
-                      <div key={appt.id} className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 space-y-2">
+                      <div key={appt.id} className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm p-3 space-y-2">
                         <div className="flex items-start gap-2">
-                          <User className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm font-semibold text-gray-900">{appt.customerName}</span>
+                          <User className="h-4 w-4 text-gray-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm font-semibold text-gray-900 dark:text-white">{appt.customerName}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
                           <Phone className="h-3 w-3 flex-shrink-0" />{appt.customerPhone}
                         </div>
                         {agentFilter === 'all' && appt.client?.name && (
                           <div className="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-md">{appt.client.name}</div>
                         )}
-                        <div className="flex flex-wrap gap-1 pt-1 border-t border-gray-100">
+                        <div className="flex flex-wrap gap-1 pt-1 border-t border-gray-100 dark:border-slate-800">
                           {others.map((o) => {
                             const arrow = COLUMNS.findIndex(c => c.key === o.key) < COLUMNS.findIndex(c => c.key === col.key) ? '←' : '→'
                             return (

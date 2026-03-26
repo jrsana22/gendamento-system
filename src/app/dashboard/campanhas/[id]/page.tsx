@@ -95,8 +95,8 @@ export default function CampaignDetailPage() {
     else toast.error('Erro ao atualizar')
   }
 
-  if (loading) return <div className="py-20 text-center text-gray-400">Carregando...</div>
-  if (!campaign) return <div className="py-20 text-center text-gray-400">Campanha não encontrada</div>
+  if (loading) return <div className="py-20 text-center text-gray-400 dark:text-slate-500">Carregando...</div>
+  if (!campaign) return <div className="py-20 text-center text-gray-400 dark:text-slate-500">Campanha não encontrada</div>
 
   const contacts = campaign.contacts
   const total = contacts.length
@@ -114,14 +114,14 @@ export default function CampaignDetailPage() {
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold text-gray-900">{campaign.title}</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">{campaign.title}</h1>
             {campaign.isRecurring && (
               <span className="inline-flex items-center gap-1 text-xs text-purple-700 bg-purple-50 rounded-full px-2 py-0.5 border border-purple-200">
                 <RefreshCw className="h-3 w-3" /> Semanal a cada {campaign.recurDays}d
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 mt-0.5">{formatDateTime(campaign.scheduledAt)}</p>
+          <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">{formatDateTime(campaign.scheduledAt)}</p>
         </div>
         {campaign.status === 'DRAFT' && pendingStart > 0 && (
           <Button onClick={handleStart}>
@@ -133,18 +133,18 @@ export default function CampaignDetailPage() {
       {/* Métricas */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: 'Total', value: total, icon: Users, color: 'text-gray-600', bg: 'bg-gray-50' },
+          { label: 'Total', value: total, icon: Users, color: 'text-gray-600 dark:text-slate-400', bg: 'bg-gray-50 dark:bg-slate-800/50' },
           { label: 'Enviados', value: sent, icon: Send, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Confirmados', value: confirmed, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
           { label: 'Na fila', value: remaining, icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3">
+          <div key={label} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-4 flex items-center gap-3">
             <div className={`h-9 w-9 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
               <Icon className={`h-4 w-4 ${color}`} />
             </div>
             <div>
-              <p className="text-lg font-bold text-gray-900">{value}</p>
-              <p className="text-xs text-gray-500">{label}</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{value}</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">{label}</p>
             </div>
           </div>
         ))}
@@ -152,16 +152,16 @@ export default function CampaignDetailPage() {
 
       {/* Barra de progresso */}
       {campaign.status === 'SENDING' && total > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-4">
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-700 font-medium">Progresso do disparo</span>
-            <span className="text-gray-500">{sent}/{total} · ~{remaining} min restantes</span>
+            <span className="text-gray-700 dark:text-slate-300 font-medium">Progresso do disparo</span>
+            <span className="text-gray-500 dark:text-slate-400">{sent}/{total} · ~{remaining} min restantes</span>
           </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
             <div className="h-full bg-blue-500 rounded-full transition-all duration-700"
               style={{ width: `${total > 0 ? (sent / total) * 100 : 0}%` }} />
           </div>
-          <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+          <p className="text-xs text-gray-400 dark:text-slate-500 mt-2 flex items-center gap-1">
             <Loader2 className="h-3 w-3 animate-spin" />
             Atualizando automaticamente a cada 30 segundos
           </p>
@@ -169,30 +169,30 @@ export default function CampaignDetailPage() {
       )}
 
       {/* Tabela de contatos */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900">Contatos</h2>
-          <p className="text-xs text-gray-500">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
+          <h2 className="font-semibold text-gray-900 dark:text-white">Contatos</h2>
+          <p className="text-xs text-gray-500 dark:text-slate-400">
             Confirme manualmente quem respondeu SIM para criar o agendamento e ativar os lembretes
           </p>
         </div>
 
         {contacts.length === 0 ? (
-          <div className="py-12 text-center text-gray-400">Nenhum contato adicionado</div>
+          <div className="py-12 text-center text-gray-400 dark:text-slate-500">Nenhum contato adicionado</div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-slate-800">
             {contacts.map((c) => {
               const cfg = contactStatusConfig[c.status] ?? contactStatusConfig.PENDING
               const Icon = cfg.icon
               const isBusy = acting === c.id
 
               return (
-                <div key={c.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50">
+                <div key={c.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:bg-slate-800/50">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400 w-5 text-right">{c.dispatchOrder}</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500 w-5 text-right">{c.dispatchOrder}</span>
                     <div>
-                      <p className="font-medium text-sm text-gray-900">{c.name}</p>
-                      <p className="text-xs text-gray-400">{c.phone}</p>
+                      <p className="font-medium text-sm text-gray-900 dark:text-white">{c.name}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500">{c.phone}</p>
                     </div>
                   </div>
 
@@ -203,7 +203,7 @@ export default function CampaignDetailPage() {
                       </span>
                     )}
                     {c.sentAt && (
-                      <span className="text-xs text-gray-400 hidden sm:block">
+                      <span className="text-xs text-gray-400 dark:text-slate-500 hidden sm:block">
                         Enviado {new Date(c.sentAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     )}
@@ -220,7 +220,7 @@ export default function CampaignDetailPage() {
                           <CheckCircle className="h-3.5 w-3.5" /> Confirmou
                         </Button>
                         <Button size="sm" variant="ghost" disabled={isBusy} onClick={() => handleDecline(c.id)}>
-                          <XCircle className="h-3.5 w-3.5 text-gray-400" />
+                          <XCircle className="h-3.5 w-3.5 text-gray-400 dark:text-slate-500" />
                         </Button>
                       </div>
                     )}

@@ -67,7 +67,7 @@ export default function CampanhasPage() {
       </div>
 
       {loading ? (
-        <div className="py-16 text-center text-gray-400">Carregando...</div>
+        <div className="py-16 text-center text-gray-400 dark:text-slate-500">Carregando...</div>
       ) : campaigns.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-slate-500">
           <Megaphone className="h-12 w-12 mb-3" />
@@ -98,7 +98,7 @@ export default function CampanhasPage() {
                       )}
                     </div>
                     {c.description && (
-                      <p className="text-sm text-gray-500 mt-0.5">{c.description}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">{c.description}</p>
                     )}
                     <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-slate-400">
                       <span className="flex items-center gap-1">
@@ -135,7 +135,7 @@ export default function CampanhasPage() {
                 {/* Barra de progresso */}
                 {c.status === 'SENDING' && total > 0 && (
                   <div className="mt-3">
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <div className="flex justify-between text-xs text-gray-500 dark:text-slate-400 mb-1">
                       <span>Progresso do disparo</span>
                       <span>{Math.round((sent / total) * 100)}%</span>
                     </div>

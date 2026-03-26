@@ -130,7 +130,7 @@ export default function CRMPage() {
   )
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-400">Carregando...</div>
+    return <div className="flex items-center justify-center h-64 text-gray-400 dark:text-slate-500">Carregando...</div>
   }
 
   return (
@@ -142,7 +142,7 @@ export default function CRMPage() {
           <p className="text-gray-500 dark:text-slate-400 mt-1">Acompanhe o status dos seus contatos</p>
         </div>
         <div className="relative w-full sm:w-60">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
           <input
             type="text"
             placeholder="Buscar por nome ou telefone..."
@@ -154,7 +154,7 @@ export default function CRMPage() {
       </div>
 
       {/* Mobile tabs */}
-      <div className="flex md:hidden border-b border-gray-200 overflow-x-auto">
+      <div className="flex md:hidden border-b border-gray-200 dark:border-slate-800 overflow-x-auto">
         {COLUMNS.map((col, i) => {
           const count = filtered.filter(a => a.status === col.key).length
           return (
@@ -164,7 +164,7 @@ export default function CRMPage() {
               className={`flex-shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === i
                   ? 'border-blue-600 text-blue-700'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300'
               }`}
             >
               {col.label} <span className="ml-1 text-xs font-bold">({count})</span>
@@ -202,14 +202,14 @@ export default function CRMPage() {
             <div key={col.key} className={`rounded-xl border-2 ${colStyle[col.color]} flex flex-col`}>
               <div className={`rounded-t-xl px-4 py-3 flex items-center justify-between ${headerStyle[col.color]}`}>
                 <span className="font-semibold text-sm">{col.label}</span>
-                <span className="text-xs font-bold bg-white bg-opacity-60 rounded-full px-2 py-0.5">
+                <span className="text-xs font-bold bg-white dark:bg-slate-900 bg-opacity-60 rounded-full px-2 py-0.5">
                   {cards.length}
                 </span>
               </div>
 
               <div className="flex flex-col gap-2 p-3 flex-1">
                 {cards.length === 0 && (
-                  <p className="text-xs text-gray-400 text-center py-6">Nenhum contato</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500 text-center py-6">Nenhum contato</p>
                 )}
 
                 {visibleGroups.map(([dateKey, items]) => (
@@ -262,7 +262,7 @@ export default function CRMPage() {
                 {allCards.length > INITIAL_SHOW && (
                   <button
                     onClick={() => setExpanded(e => ({ ...e, [colKey]: !isExpanded }))}
-                    className="flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 py-1 font-medium"
+                    className="flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300 py-1 font-medium"
                   >
                     {isExpanded
                       ? <><ChevronUp className="h-3 w-3" /> Ocultar</>
@@ -287,7 +287,7 @@ export default function CRMPage() {
           <div key={col.key} className={`md:hidden rounded-xl border-2 ${colStyle[col.color]}`}>
             <div className="flex flex-col gap-2 p-3">
               {cards.length === 0 && (
-                <p className="text-xs text-gray-400 text-center py-6">Nenhum contato nesta coluna</p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 text-center py-6">Nenhum contato nesta coluna</p>
               )}
               {groups.map(([dateKey, items]) => (
                 <div key={dateKey}>
@@ -296,18 +296,18 @@ export default function CRMPage() {
                   </div>
                   <div className="flex flex-col gap-2">
                     {items.map((appt) => (
-                      <div key={appt.id} className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 space-y-2">
+                      <div key={appt.id} className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm p-3 space-y-2">
                         <div className="flex items-start gap-2">
-                          <User className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm font-semibold text-gray-900">{appt.customerName}</span>
+                          <User className="h-4 w-4 text-gray-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm font-semibold text-gray-900 dark:text-white">{appt.customerName}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
                           <Phone className="h-3 w-3 flex-shrink-0" />
                           {appt.customerPhone}
                         </div>
-                        {appt.notes && <p className="text-xs text-gray-400 italic truncate">{appt.notes}</p>}
-                        <div className="flex flex-wrap gap-1 pt-1 border-t border-gray-100">
-                          <button onClick={() => openEdit(appt)} className="text-xs px-2 py-1 rounded-md font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center gap-1">
+                        {appt.notes && <p className="text-xs text-gray-400 dark:text-slate-500 italic truncate">{appt.notes}</p>}
+                        <div className="flex flex-wrap gap-1 pt-1 border-t border-gray-100 dark:border-slate-800">
+                          <button onClick={() => openEdit(appt)} className="text-xs px-2 py-1 rounded-md font-medium bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 flex items-center gap-1">
                             <Pencil className="h-3 w-3" /> Editar
                           </button>
                           {others.map((o) => {
@@ -343,7 +343,7 @@ export default function CRMPage() {
         <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:border dark:border-slate-800">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-800">
             <h2 className="font-semibold text-gray-900 dark:text-white">Editar agendamento</h2>
-            <button onClick={() => setEditingAppt(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200"><X className="h-5 w-5" /></button>
+            <button onClick={() => setEditingAppt(null)} className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-200"><X className="h-5 w-5" /></button>
           </div>
           <form onSubmit={handleEdit} className="px-6 py-5 space-y-4">
             <div className="flex flex-col gap-1">

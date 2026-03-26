@@ -28,53 +28,53 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Painel Admin</h1>
-        <p className="text-gray-500 mt-1">Visão geral de todos os agentes e agendamentos</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Painel Admin</h1>
+        <p className="text-gray-500 dark:text-slate-400 mt-1">Visão geral de todos os agentes e agendamentos</p>
       </div>
 
       {/* Stats globais */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">
         {stats.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white rounded-xl border border-gray-200 p-6 flex items-center gap-4">
+          <div key={label} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6 flex items-center gap-4">
             <div className={`h-12 w-12 rounded-xl ${bg} flex items-center justify-center`}>
               <Icon className={`h-6 w-6 ${color}`} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{value}</p>
-              <p className="text-sm text-gray-500">{label}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">{label}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Métricas por agente */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-gray-500" />
-            <h2 className="font-semibold text-gray-900">Desempenho por agente</h2>
+            <TrendingUp className="h-4 w-4 text-gray-500 dark:text-slate-400" />
+            <h2 className="font-semibold text-gray-900 dark:text-white">Desempenho por agente</h2>
           </div>
           <Link href="/admin/clientes" className="text-sm text-blue-600 hover:underline">Gerenciar agentes</Link>
         </div>
 
         {clients.length === 0 ? (
-          <div className="py-12 text-center text-gray-400 text-sm">Nenhum agente cadastrado</div>
+          <div className="py-12 text-center text-gray-400 dark:text-slate-500 text-sm">Nenhum agente cadastrado</div>
         ) : (
           <div className="overflow-x-auto -mx-0">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Agente</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total leads</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Agendados</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Compareceram</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Não compareceram</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Consultores</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Taxa comparec.</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Lembretes pend.</th>
+                <tr className="border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50">
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Agente</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Total leads</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Agendados</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Compareceram</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Não compareceram</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Consultores</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Taxa comparec.</th>
+                  <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Lembretes pend.</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
                 {clients.map((client) => {
                   const total = client.appointments.length
                   const scheduled = client.appointments.filter(a => a.status === 'SCHEDULED').length
@@ -86,19 +86,19 @@ export default async function AdminDashboard() {
                   const pendingNotifCount = client.appointments.flatMap(a => a.notifications).filter(n => n.status === 'PENDING').length
 
                   return (
-                    <tr key={client.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={client.id} className="hover:bg-gray-50 dark:bg-slate-800/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm flex-shrink-0">
                             {client.name[0].toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{client.name}</p>
-                            <p className="text-xs text-gray-400">{client.instanceName}</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{client.name}</p>
+                            <p className="text-xs text-gray-400 dark:text-slate-500">{client.instanceName}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-center font-semibold text-gray-900">{total}</td>
+                      <td className="px-4 py-4 text-center font-semibold text-gray-900 dark:text-white">{total}</td>
                       <td className="px-4 py-4 text-center">
                         <span className="inline-block bg-blue-100 text-blue-700 text-xs font-medium px-2 py-0.5 rounded-full">{scheduled}</span>
                       </td>
@@ -121,14 +121,14 @@ export default async function AdminDashboard() {
                             {rate}%
                           </span>
                         ) : (
-                          <span className="text-gray-300 text-xs">—</span>
+                          <span className="text-gray-300 dark:text-slate-600 text-xs">—</span>
                         )}
                       </td>
                       <td className="px-4 py-4 text-center">
                         {pendingNotifCount > 0 ? (
                           <span className="inline-block bg-yellow-100 text-yellow-700 text-xs font-medium px-2 py-0.5 rounded-full">{pendingNotifCount}</span>
                         ) : (
-                          <span className="text-gray-300 text-xs">—</span>
+                          <span className="text-gray-300 dark:text-slate-600 text-xs">—</span>
                         )}
                       </td>
                     </tr>

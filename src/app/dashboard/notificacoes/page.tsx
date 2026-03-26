@@ -180,7 +180,7 @@ export default async function NotificacoesPage() {
                       </div>
 
                       {/* Notification columns */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-gray-100 dark:divide-slate-800 bg-gray-50/40 dark:bg-slate-800/30">
+                      <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-gray-100 dark:divide-slate-800 bg-gray-50 dark:bg-slate-800/30">
                         {notifs.map((n) => (
                           <div key={n.id} className="px-4 py-3 space-y-2">
                             {/* Type + dot */}

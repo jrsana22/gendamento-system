@@ -111,8 +111,8 @@ export default function ClientesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
-          <p className="text-gray-500 mt-1">Cada cliente tem uma URL webhook exclusiva para o agente n8n</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Clientes</h1>
+          <p className="text-gray-500 dark:text-slate-400 mt-1">Cada cliente tem uma URL webhook exclusiva para o agente n8n</p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4" /> Novo cliente
@@ -120,9 +120,9 @@ export default function ClientesPage() {
       </div>
 
       {loading ? (
-        <div className="py-16 text-center text-gray-400">Carregando...</div>
+        <div className="py-16 text-center text-gray-400 dark:text-slate-500">Carregando...</div>
       ) : clients.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+        <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-slate-500">
           <Users className="h-10 w-10 mb-3" />
           <p>Nenhum cliente cadastrado</p>
           <Button className="mt-4" onClick={openCreate} size="sm">
@@ -132,16 +132,16 @@ export default function ClientesPage() {
       ) : (
         <div className="space-y-4">
           {clients.map((c) => (
-            <div key={c.id} className="bg-white rounded-xl border border-gray-200 p-5">
+            <div key={c.id} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-3">
-                    <h3 className="font-semibold text-gray-900 text-lg">{c.name}</h3>
-                    <span className="text-xs text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-lg">{c.name}</h3>
+                    <span className="text-xs text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-800 rounded-full px-2 py-0.5">
                       {c._count.appointments} agendamentos
                     </span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-0.5">{c.user.email} · instância: <code className="text-blue-700 font-mono">{c.instanceName}</code></p>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">{c.user.email} · instância: <code className="text-blue-700 font-mono">{c.instanceName}</code></p>
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" variant="ghost" onClick={() => openEdit(c)}>
@@ -154,27 +154,27 @@ export default function ClientesPage() {
               </div>
 
               {/* Webhook URL — o que o n8n vai usar */}
-              <div className="mt-4 bg-gray-50 rounded-lg border border-gray-200 p-3">
+              <div className="mt-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-800 p-3">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Link2 className="h-3.5 w-3.5 text-blue-600" />
-                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  <span className="text-xs font-semibold text-gray-600 dark:text-slate-400 uppercase tracking-wide">
                     URL do Webhook para o agente n8n
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 text-xs text-blue-700 font-mono bg-white border border-gray-200 rounded px-3 py-2 truncate">
+                  <code className="flex-1 text-xs text-blue-700 font-mono bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded px-3 py-2 truncate">
                     {webhookUrl(c.webhookToken)}
                   </code>
                   <button
                     onClick={() => copyWebhook(c.webhookToken)}
-                    className="flex-shrink-0 flex items-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 bg-white border border-gray-200 rounded px-3 py-2 transition-colors"
+                    className="flex-shrink-0 flex items-center gap-1.5 text-xs text-gray-600 dark:text-slate-400 hover:text-blue-600 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded px-3 py-2 transition-colors"
                   >
                     {copied === c.webhookToken
                       ? <><Check className="h-3.5 w-3.5 text-green-600" /> Copiado</>
                       : <><Copy className="h-3.5 w-3.5" /> Copiar</>}
                   </button>
                 </div>
-                <p className="text-xs text-gray-400 mt-1.5">
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-1.5">
                   Configure no n8n: HTTP Request → POST → body: name, phone, scheduledAt, title
                 </p>
               </div>
@@ -185,12 +185,12 @@ export default function ClientesPage() {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="font-semibold text-gray-900">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-800">
+              <h2 className="font-semibold text-gray-900 dark:text-white">
                 {editingId ? 'Editar cliente' : 'Novo cliente'}
               </h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowModal(false)} className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:text-slate-400">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -204,7 +204,7 @@ export default function ClientesPage() {
                   placeholder="5511999999999" />
               </div>
 
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Acesso ao sistema</p>
+              <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide pt-1">Acesso ao sistema</p>
               <div className="grid grid-cols-2 gap-4">
                 <Input label="E-mail *" type="email" value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -215,7 +215,7 @@ export default function ClientesPage() {
                   required={!editingId} />
               </div>
 
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide pt-1">Evolution API</p>
+              <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide pt-1">Evolution API</p>
               <Input label="URL da Evolution *" value={form.evoUrl}
                 onChange={(e) => setForm({ ...form, evoUrl: e.target.value })}
                 placeholder="https://sua-evo.com" required />

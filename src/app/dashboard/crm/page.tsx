@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Phone, User, Search, ChevronDown, ChevronUp, Pencil, X, GripVertical } from 'lucide-react'
+import { Phone, User, Search, ChevronDown, ChevronUp, Pencil, X, GripVertical, Archive, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
   DndContext,
@@ -416,6 +416,8 @@ export default function CRMPage() {
   const [editForm, setEditForm] = useState({ title: '', customerName: '', customerPhone: '', scheduledAt: '', notes: '' })
   const [saving, setSaving] = useState(false)
   const [draggedAppt, setDraggedAppt] = useState<Appointment | null>(null)
+  const [archiveModal, setArchiveModal] = useState(false)
+  const [archivingDate, setArchivingDate] = useState<string | null>(null)
 
   // Touch sensor: delay + tolerance so tapping buttons still works
   const sensors = useSensors(
@@ -472,6 +474,31 @@ export default function CRMPage() {
     setMoving(null)
   }
 
+  // Unique meeting dates from loaded appointments
+  const meetingDates = Array.from(
+    new Set(appointments.map(a =>
+      new Date(a.scheduledAt).toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+    ))
+  ).sort()
+
+  async function archiveMeeting(date: string) {
+    setArchivingDate(date)
+    const res = await fetch('/api/appointments/archive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date }),
+    })
+    const data = await res.json()
+    setArchivingDate(null)
+    if (res.ok) {
+      toast.success(`${data.archived} lead(s) arquivado(s)`)
+      setArchiveModal(false)
+      fetchAppointments()
+    } else {
+      toast.error('Erro ao arquivar')
+    }
+  }
+
   function handleDragStart(event: DragStartEvent) {
     const appt = appointments.find(a => a.id === event.active.id)
     setDraggedAppt(appt ?? null)
@@ -501,20 +528,29 @@ export default function CRMPage() {
     <>
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Acompanhamento de Leads</h1>
           <p className="text-gray-500 dark:text-slate-400 mt-1">Acompanhe o status dos seus contatos</p>
         </div>
-        <div className="relative w-full sm:w-60">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
-          <input
-            type="text"
-            placeholder="Buscar por nome ou telefone..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 rounded-xl placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <div className="flex gap-2 items-center flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-44 sm:w-52 pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 rounded-xl placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button
+            onClick={() => setArchiveModal(true)}
+            className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all"
+          >
+            <Archive className="h-4 w-4" />
+            <span className="hidden sm:inline">Arquivar encontro</span>
+          </button>
         </div>
       </div>
 
@@ -561,6 +597,62 @@ export default function CRMPage() {
       })() : null}
     </DragOverlay>
     </DndContext>
+
+    {/* Modal de arquivar encontro */}
+    {archiveModal && (
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-4">
+        <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:border dark:border-slate-800">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <Archive className="h-5 w-5 text-gray-500 dark:text-slate-400" />
+              <h2 className="font-semibold text-gray-900 dark:text-white">Arquivar encontro</h2>
+            </div>
+            <button onClick={() => setArchiveModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="px-6 py-4 space-y-3">
+            <p className="text-sm text-gray-500 dark:text-slate-400">
+              Selecione o encontro para arquivar. Os leads sumirão desta tela e ficam salvos no histórico.
+            </p>
+
+            {meetingDates.length === 0 ? (
+              <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-4">Nenhum encontro ativo</p>
+            ) : (
+              <div className="space-y-2">
+                {meetingDates.map((date) => {
+                  const count = appointments.filter(a =>
+                    new Date(a.scheduledAt).toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' }) === date
+                  ).length
+                  const label = new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', {
+                    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+                    timeZone: 'America/Sao_Paulo',
+                  })
+                  return (
+                    <button
+                      key={date}
+                      disabled={archivingDate === date}
+                      onClick={() => archiveMeeting(date)}
+                      className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all disabled:opacity-50"
+                    >
+                      <div className="text-left">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white capitalize">{label}</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">{count} lead{count !== 1 ? 's' : ''}</p>
+                      </div>
+                      {archivingDate === date
+                        ? <span className="text-xs text-gray-400">Arquivando...</span>
+                        : <ChevronRight className="h-4 w-4 text-gray-400" />
+                      }
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* Modal de edição */}
     {editingAppt && (

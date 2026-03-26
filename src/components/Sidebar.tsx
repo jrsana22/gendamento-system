@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   Calendar, Users, LayoutDashboard, LogOut, Bell,
-  KanbanSquare, UserCircle, Megaphone, Sun, Moon,
+  KanbanSquare, UserCircle, Sun, Moon,
 } from 'lucide-react'
 import { WhatsAppStatus } from './WhatsAppStatus'
 import { useTheme } from './ThemeProvider'
@@ -31,7 +31,6 @@ export function Sidebar({ role, name }: SidebarProps) {
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/dashboard/agendamentos', label: 'Agendamentos', icon: Calendar },
     { href: '/dashboard/crm', label: 'Acomp. de Leads', icon: KanbanSquare },
-    { href: '/dashboard/campanhas', label: 'Campanhas', icon: Megaphone },
     { href: '/dashboard/notificacoes', label: 'Notificações', icon: Bell },
     { href: '/dashboard/perfil', label: 'Meu Perfil', icon: UserCircle },
   ]
@@ -41,7 +40,7 @@ export function Sidebar({ role, name }: SidebarProps) {
     { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
     { href: '/dashboard/agendamentos', label: 'Agenda', icon: Calendar },
     { href: '/dashboard/crm', label: 'Leads', icon: KanbanSquare },
-    { href: '/dashboard/campanhas', label: 'Campanhas', icon: Megaphone },
+    { href: '/dashboard/notificacoes', label: 'Notif.', icon: Bell },
     { href: '/dashboard/perfil', label: 'Perfil', icon: UserCircle },
   ]
 

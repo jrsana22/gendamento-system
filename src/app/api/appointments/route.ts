@@ -4,12 +4,15 @@ import { prisma } from '@/lib/db'
 import { scheduleNotifications } from '@/lib/notifications'
 
 // GET /api/appointments - agendamentos do cliente logado
-export async function GET() {
+// ?archived=true para ver arquivados
+export async function GET(req: NextRequest) {
   const session = await getSession()
   if (!session?.clientId) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
+  const archived = req.nextUrl.searchParams.get('archived') === 'true'
+
   const appointments = await prisma.appointment.findMany({
-    where: { clientId: session.clientId },
+    where: { clientId: session.clientId, archived },
     include: { notifications: { orderBy: { scheduledAt: 'asc' } } },
     orderBy: { scheduledAt: 'asc' },
   })

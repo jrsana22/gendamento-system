@@ -161,15 +161,14 @@ function KanbanCard({
         overlay ? 'shadow-2xl rotate-1 scale-105' : ''
       }`}
     >
-      {/* Card body */}
-      <div className="p-3 space-y-1.5">
+      {/* Card body — área de drag (pressionar e arrastar) */}
+      <div
+        {...listeners}
+        {...attributes}
+        className="p-3 space-y-1.5 cursor-grab active:cursor-grabbing"
+      >
         <div className="flex items-start gap-2">
-          {/* Drag handle */}
-          <div
-            {...listeners}
-            {...attributes}
-            className="mt-0.5 flex-shrink-0 text-gray-300 dark:text-slate-600 hover:text-gray-500 dark:hover:text-slate-400 cursor-grab active:cursor-grabbing touch-none"
-          >
+          <div className="mt-0.5 flex-shrink-0 text-gray-300 dark:text-slate-600">
             <GripVertical className="h-4 w-4" />
           </div>
           <div className="flex-1 min-w-0">
@@ -376,7 +375,7 @@ export default function CRMPage() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 300, tolerance: 5 } }),
   )
 
   const fetchAppointments = useCallback(async () => {

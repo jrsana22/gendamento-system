@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 
 export function FixNotificationsButton() {
   const [loading, setLoading] = useState(false)
@@ -14,7 +15,10 @@ export function FixNotificationsButton() {
     const data = await res.json()
     setLoading(false)
     if (data.fixed > 0) {
+      toast.success(`${data.fixed} agendamento(s) corrigido(s) — lembretes gerados!`)
       router.refresh()
+    } else {
+      toast('Nenhum agendamento sem lembrete encontrado', { icon: 'ℹ️' })
     }
   }
 

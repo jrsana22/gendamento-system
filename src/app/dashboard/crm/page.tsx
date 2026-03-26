@@ -74,9 +74,9 @@ const dateGroupStyle: Record<string, string> = {
 }
 
 const MOVE_LABEL: Record<string, string> = {
-  SCHEDULED: 'Agend.',
-  DONE:      'Comp.',
-  CANCELLED: 'N.Comp.',
+  SCHEDULED: 'Agendado',
+  DONE:      'Compareceu',
+  CANCELLED: 'Não compareceu',
 }
 
 function formatDate(dateStr: string) {
@@ -208,38 +208,40 @@ function KanbanCard({
 
       {/* Action bar */}
       {!overlay && (
-        <div className="flex items-stretch border-t border-gray-100 dark:border-slate-800 divide-x divide-gray-100 dark:divide-slate-800">
+        <div className="border-t border-gray-100 dark:border-slate-800 px-2 py-1.5 flex flex-wrap gap-1 items-center">
           {/* Edit */}
           <button
             onClick={() => onEdit(appt)}
-            title="Editar"
-            className="px-2.5 py-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
+            className="text-xs px-2 py-1 rounded-md font-medium bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 flex items-center gap-1"
           >
-            <Pencil className="h-3.5 w-3.5" />
+            <Pencil className="h-3 w-3" /> Editar
           </button>
 
-          {/* Move chips */}
-          <div className="flex items-center gap-1 px-2 py-1.5 flex-1 flex-wrap">
-            {others.map((o) => (
+          {/* Arrow move buttons */}
+          {others.map((o) => {
+            const currentIdx = COLUMNS.findIndex(c => c.key === col.key)
+            const targetIdx  = COLUMNS.findIndex(c => c.key === o.key)
+            const arrow = targetIdx < currentIdx ? '←' : '→'
+            return (
               <button
                 key={o.key}
                 disabled={moving === appt.id}
                 onClick={() => onMove(appt.id, o.key)}
-                className={`text-xs px-2 py-0.5 rounded-md font-medium transition-opacity disabled:opacity-40 ${moveChipStyle[o.key]}`}
+                className={`text-xs px-2 py-1 rounded-md font-medium transition-opacity disabled:opacity-40 hover:opacity-80 ${moveChipStyle[o.key]}`}
               >
-                {MOVE_LABEL[o.key]}
+                {arrow} {MOVE_LABEL[o.key]}
               </button>
-            ))}
-          </div>
+            )
+          })}
 
           {/* Novo convite — só no CANCELLED */}
           {col.key === 'CANCELLED' && (
             <button
               onClick={() => onReinvite(appt)}
               title="Novo convite (próxima quinta)"
-              className="px-2.5 py-2 text-blue-400 dark:text-blue-500 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors flex items-center justify-center"
+              className="text-xs px-2 py-1 rounded-md font-medium bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:opacity-80 flex items-center gap-1"
             >
-              <RotateCcw className="h-3.5 w-3.5" />
+              <RotateCcw className="h-3 w-3" /> Novo convite
             </button>
           )}
 
@@ -247,9 +249,9 @@ function KanbanCard({
           <button
             onClick={() => onDelete(appt.id, appt.customerName)}
             title="Excluir"
-            className="px-2.5 py-2 text-red-300 dark:text-red-700/70 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center justify-center"
+            className="ml-auto text-xs px-2 py-1 rounded-md font-medium text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors flex items-center gap-1"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-3 w-3" />
           </button>
         </div>
       )}

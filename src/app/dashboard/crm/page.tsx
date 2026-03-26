@@ -31,42 +31,36 @@ const COLUMNS = [
   { key: 'SCHEDULED', label: 'Agendado', color: 'blue' },
   { key: 'DONE', label: 'Compareceu', color: 'green' },
   { key: 'CANCELLED', label: 'Não compareceu', color: 'red' },
-  { key: 'CONSULTANT', label: 'Consultor Cadastrado', color: 'purple' },
 ]
 
 const colStyle: Record<string, string> = {
   blue:   'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900',
   green:  'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900',
   red:    'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900',
-  purple: 'bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900',
 }
 
 const colStyleOver: Record<string, string> = {
   blue:   'bg-blue-100 dark:bg-blue-950/40 border-blue-400 dark:border-blue-600',
   green:  'bg-green-100 dark:bg-green-950/40 border-green-400 dark:border-green-600',
   red:    'bg-red-100 dark:bg-red-950/40 border-red-400 dark:border-red-600',
-  purple: 'bg-purple-100 dark:bg-purple-950/40 border-purple-400 dark:border-purple-600',
 }
 
 const headerStyle: Record<string, string> = {
   blue:   'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
   green:  'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
   red:    'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
-  purple: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
 }
 
 const badgeStyle: Record<string, string> = {
-  SCHEDULED:  'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300',
-  DONE:       'bg-green-100 dark:bg-green-950/60 text-green-700 dark:text-green-300',
-  CANCELLED:  'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300',
-  CONSULTANT: 'bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300',
+  SCHEDULED: 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300',
+  DONE:      'bg-green-100 dark:bg-green-950/60 text-green-700 dark:text-green-300',
+  CANCELLED: 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300',
 }
 
 const dateGroupStyle: Record<string, string> = {
   blue:   'bg-blue-200 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200',
   green:  'bg-green-200 dark:bg-green-900/50 text-green-800 dark:text-green-200',
   red:    'bg-red-200 dark:bg-red-900/50 text-red-800 dark:text-red-200',
-  purple: 'bg-purple-200 dark:bg-purple-900/50 text-purple-800 dark:text-purple-200',
 }
 
 function formatDateGroup(dateStr: string) {
@@ -267,13 +261,11 @@ const COL_ABBREV: Record<string, string> = {
   SCHEDULED: 'Agendado',
   DONE: 'Compareceu',
   CANCELLED: 'N. Comp.',
-  CONSULTANT: 'Consultor',
 }
 const COL_MOVE_LABEL: Record<string, string> = {
   SCHEDULED: 'Agend.',
   DONE: 'Comp.',
   CANCELLED: 'N.Comp',
-  CONSULTANT: 'Consul.',
 }
 
 function MobileKanban({

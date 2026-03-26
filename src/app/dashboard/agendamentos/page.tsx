@@ -4,9 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { Input } from '@/components/ui/Input'
 import { formatDateTime, STATUS_LABELS, NOTIF_LABELS, NOTIF_STATUS_LABELS } from '@/lib/utils'
-import { Plus, Calendar, ChevronDown, ChevronUp, Trash2, CheckCircle, XCircle, Pencil, X, Search, Download } from 'lucide-react'
+import { Plus, Calendar, ChevronDown, ChevronUp, Trash2, Search, Download } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface Notification {
@@ -39,9 +38,6 @@ export default function AgendamentosPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<string | null>(null)
-  const [editingAppt, setEditingAppt] = useState<Appointment | null>(null)
-  const [editForm, setEditForm] = useState({ title: '', customerName: '', customerPhone: '', scheduledAt: '', notes: '' })
-  const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -54,57 +50,6 @@ export default function AgendamentosPage() {
   }, [])
 
   useEffect(() => { fetchAppointments() }, [fetchAppointments])
-
-  function openEdit(appt: Appointment) {
-    const localDT = new Date(appt.scheduledAt).toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' }).replace(' ', 'T').slice(0, 16)
-    setEditForm({
-      title: appt.title,
-      customerName: appt.customerName,
-      customerPhone: appt.customerPhone,
-      scheduledAt: localDT,
-      notes: appt.notes || '',
-    })
-    setEditingAppt(appt)
-  }
-
-  async function handleEdit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!editingAppt) return
-    setSaving(true)
-
-    const res = await fetch(`/api/appointments/${editingAppt.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...editForm,
-        scheduledAt: new Date(editForm.scheduledAt).toISOString(),
-      }),
-    })
-
-    setSaving(false)
-    if (res.ok) {
-      toast.success('Agendamento atualizado')
-      setEditingAppt(null)
-      fetchAppointments()
-    } else {
-      const d = await res.json()
-      toast.error(d.error || 'Erro ao atualizar')
-    }
-  }
-
-  async function updateStatus(id: string, status: string) {
-    const res = await fetch(`/api/appointments/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    })
-    if (res.ok) {
-      toast.success('Status atualizado')
-      fetchAppointments()
-    } else {
-      toast.error('Erro ao atualizar')
-    }
-  }
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Excluir o agendamento de "${name}"?`)) return
@@ -200,66 +145,26 @@ export default function AgendamentosPage() {
         <>
           {upcoming.length > 0 && (
             <ApptSection title="Próximos" appointments={upcoming} expanded={expanded}
-              setExpanded={setExpanded} updateStatus={updateStatus}
-              onDelete={handleDelete} onEdit={openEdit}
+              setExpanded={setExpanded} onDelete={handleDelete}
               statusVariant={statusVariant} notifVariant={notifVariant} />
           )}
           {past.length > 0 && (
             <ApptSection title="Histórico" appointments={past} expanded={expanded}
-              setExpanded={setExpanded} updateStatus={updateStatus}
-              onDelete={handleDelete} onEdit={openEdit}
+              setExpanded={setExpanded} onDelete={handleDelete}
               statusVariant={statusVariant} notifVariant={notifVariant} />
           )}
         </>
-      )}
-
-      {/* Modal de edição */}
-      {editingAppt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:border dark:border-slate-800">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-800">
-              <h2 className="font-semibold text-gray-900 dark:text-white">Editar agendamento</h2>
-              <button onClick={() => setEditingAppt(null)} className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-200">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <form onSubmit={handleEdit} className="px-6 py-5 space-y-4">
-              <Input label="Título *" value={editForm.title}
-                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} required />
-              <div className="grid grid-cols-2 gap-3">
-                <Input label="Nome do cliente *" value={editForm.customerName}
-                  onChange={(e) => setEditForm({ ...editForm, customerName: e.target.value })} required />
-                <Input label="WhatsApp" value={editForm.customerPhone}
-                  onChange={(e) => setEditForm({ ...editForm, customerPhone: e.target.value })} required />
-              </div>
-              <Input label="Data e horário *" type="datetime-local" value={editForm.scheduledAt}
-                onChange={(e) => setEditForm({ ...editForm, scheduledAt: e.target.value })} required />
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Observações</label>
-                <textarea rows={2} value={editForm.notes}
-                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                  className="w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-              </div>
-              <div className="flex justify-end gap-3 pt-1">
-                <Button type="button" variant="secondary" onClick={() => setEditingAppt(null)}>Cancelar</Button>
-                <Button type="submit" loading={saving}>Salvar</Button>
-              </div>
-            </form>
-          </div>
-        </div>
       )}
     </div>
   )
 }
 
-function ApptSection({ title, appointments, expanded, setExpanded, updateStatus, onDelete, onEdit, statusVariant, notifVariant }: {
+function ApptSection({ title, appointments, expanded, setExpanded, onDelete, statusVariant, notifVariant }: {
   title: string
   appointments: Appointment[]
   expanded: string | null
   setExpanded: (id: string | null) => void
-  updateStatus: (id: string, status: string) => void
   onDelete: (id: string, name: string) => void
-  onEdit: (appt: Appointment) => void
   statusVariant: Record<string, 'blue' | 'green' | 'red'>
   notifVariant: Record<string, 'yellow' | 'green' | 'red'>
 }) {
@@ -297,29 +202,11 @@ function ApptSection({ title, appointments, expanded, setExpanded, updateStatus,
               <span>{appt.notifications.filter((n) => n.status === 'SENT').length}/{appt.notifications.length} lembretes</span>
             </div>
 
-            {/* Linha 4: telefone */}
-            <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{appt.customerPhone}</p>
-
-            {/* Linha 5: ações */}
-            <div className="flex items-center gap-1.5 pt-1 border-t border-gray-100 dark:border-slate-800">
-              {appt.status === 'SCHEDULED' && (
-                <>
-                  <button onClick={() => onEdit(appt)} title="Editar"
-                    className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-                    <Pencil className="h-3.5 w-3.5" /> Editar
-                  </button>
-                  <button onClick={() => updateStatus(appt.id, 'DONE')} title="Compareceu"
-                    className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/60 transition-colors">
-                    <CheckCircle className="h-3.5 w-3.5" /> Comp.
-                  </button>
-                  <button onClick={() => updateStatus(appt.id, 'CANCELLED')} title="Não compareceu"
-                    className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-yellow-50 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 transition-colors">
-                    <XCircle className="h-3.5 w-3.5" /> N.Comp
-                  </button>
-                </>
-              )}
+            {/* Linha 4: telefone + excluir */}
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{appt.customerPhone}</p>
               <button onClick={() => onDelete(appt.id, appt.customerName)} title="Excluir"
-                className="h-8 w-8 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex-shrink-0">
+                className="h-7 w-7 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex-shrink-0">
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>

@@ -131,24 +131,25 @@ export default function AgendamentosPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Agendamentos</h1>
-          <p className="text-gray-500 dark:text-slate-400 mt-1">Gerencie seus encontros e acompanhe os lembretes automáticos</p>
+          <p className="text-gray-500 dark:text-slate-400 mt-1">Gerencie seus encontros e lembretes automáticos</p>
         </div>
-        <div className="flex gap-2">
-          <a href="/api/appointments/export" download>
-            <Button variant="secondary"><Download className="h-4 w-4" /> Exportar CSV</Button>
+        <div className="flex gap-2 flex-shrink-0">
+          <a href="/api/appointments/export" download className="hidden sm:block">
+            <Button variant="secondary" size="sm"><Download className="h-4 w-4" /><span className="hidden sm:inline"> Exportar</span></Button>
           </a>
           <Link href="/dashboard/agendamentos/novo">
-            <Button><Plus className="h-4 w-4" /> Novo agendamento</Button>
+            <Button size="sm"><Plus className="h-4 w-4" /><span className="hidden xs:inline"> Novo</span></Button>
           </Link>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 flex-wrap items-center">
-        <div className="relative w-60">
+      <div className="space-y-2">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
           <input
             type="text"
@@ -158,28 +159,31 @@ export default function AgendamentosPage() {
             className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 dark:placeholder:text-slate-500"
           />
         </div>
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-          title="De"
-        />
-        <input
-          type="date"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-          title="Até"
-        />
-        {(search || dateFrom || dateTo) && (
-          <button
-            onClick={() => { setSearch(''); setDateFrom(''); setDateTo('') }}
-            className="text-sm text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300"
-          >
-            Limpar
-          </button>
-        )}
+        <div className="flex gap-2 items-center">
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="flex-1 py-2 px-3 text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            title="De"
+          />
+          <span className="text-gray-400 dark:text-slate-500 text-sm flex-shrink-0">até</span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="flex-1 py-2 px-3 text-sm border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            title="Até"
+          />
+          {(search || dateFrom || dateTo) && (
+            <button
+              onClick={() => { setSearch(''); setDateFrom(''); setDateTo('') }}
+              className="flex-shrink-0 text-sm text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 font-medium"
+            >
+              Limpar
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -264,35 +268,47 @@ function ApptSection({ title, appointments, expanded, setExpanded, updateStatus,
       <h2 className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">{title}</h2>
       {appointments.map((appt) => (
         <div key={appt.id} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <p className="font-semibold text-gray-900 dark:text-white">{appt.customerName}</p>
+          {/* Card main row */}
+          <div className="px-4 py-3.5 space-y-2">
+            {/* Row 1: name + badge + expand */}
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <p className="font-semibold text-gray-900 dark:text-white leading-tight">{appt.customerName}</p>
                 <Badge variant={statusVariant[appt.status] ?? 'gray'}>
                   {STATUS_LABELS[appt.status] ?? appt.status}
                 </Badge>
               </div>
-              <p className="text-sm text-gray-600 dark:text-slate-400">{appt.title}</p>
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{appt.customerPhone}</p>
+              <Button size="sm" variant="ghost" className="flex-shrink-0 -mr-1"
+                onClick={() => setExpanded(expanded === appt.id ? null : appt.id)}>
+                {expanded === appt.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
+
+            {/* Row 2: title + phone */}
+            <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-slate-400">
+              <span className="truncate">{appt.title}</span>
+              <span className="text-gray-300 dark:text-slate-700">·</span>
+              <span className="flex-shrink-0 text-xs">{appt.customerPhone}</span>
+            </div>
+
+            {/* Row 3: date + lembretes + actions */}
+            <div className="flex items-center justify-between gap-2 pt-0.5">
+              <div>
                 <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDateTime(appt.scheduledAt)}</p>
                 <p className="text-xs text-gray-400 dark:text-slate-500">
-                  {appt.notifications.filter((n) => n.status === 'SENT').length}/
-                  {appt.notifications.length} lembretes
+                  {appt.notifications.filter((n) => n.status === 'SENT').length}/{appt.notifications.length} lembretes
                 </p>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 {appt.status === 'SCHEDULED' && (
                   <>
                     <Button size="sm" variant="ghost" title="Editar" onClick={() => onEdit(appt)}>
                       <Pencil className="h-4 w-4 text-gray-500 dark:text-slate-400" />
                     </Button>
-                    <Button size="sm" variant="ghost" title="Concluído" onClick={() => updateStatus(appt.id, 'DONE')}>
+                    <Button size="sm" variant="ghost" title="Compareceu" onClick={() => updateStatus(appt.id, 'DONE')}>
                       <CheckCircle className="h-4 w-4 text-green-600" />
                     </Button>
-                    <Button size="sm" variant="ghost" title="Cancelar" onClick={() => updateStatus(appt.id, 'CANCELLED')}>
+                    <Button size="sm" variant="ghost" title="Não compareceu" onClick={() => updateStatus(appt.id, 'CANCELLED')}>
                       <XCircle className="h-4 w-4 text-yellow-600" />
                     </Button>
                   </>
@@ -300,23 +316,20 @@ function ApptSection({ title, appointments, expanded, setExpanded, updateStatus,
                 <Button size="sm" variant="ghost" onClick={() => onDelete(appt.id, appt.customerName)}>
                   <Trash2 className="h-4 w-4 text-red-500" />
                 </Button>
-                <Button size="sm" variant="ghost"
-                  onClick={() => setExpanded(expanded === appt.id ? null : appt.id)}>
-                  {expanded === appt.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </Button>
               </div>
             </div>
           </div>
 
+          {/* Expanded notifications */}
           {expanded === appt.id && (
-            <div className="border-t border-gray-100 dark:border-slate-800 px-5 py-4 bg-gray-50 dark:bg-slate-800/50">
+            <div className="border-t border-gray-100 dark:border-slate-800 px-4 py-4 bg-gray-50 dark:bg-slate-800/50 space-y-3">
               {appt.notes && (
-                <p className="text-sm text-gray-600 dark:text-slate-300 mb-3"><span className="font-medium">Obs:</span> {appt.notes}</p>
+                <p className="text-sm text-gray-600 dark:text-slate-300"><span className="font-medium">Obs:</span> {appt.notes}</p>
               )}
-              <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">Lembretes automáticos</p>
-              <div className="grid grid-cols-2 gap-2">
+              <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Lembretes automáticos</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {appt.notifications.length === 0 ? (
-                  <p className="text-sm text-gray-400 dark:text-slate-500 col-span-2">Nenhum lembrete agendado</p>
+                  <p className="text-sm text-gray-400 dark:text-slate-500">Nenhum lembrete agendado</p>
                 ) : (
                   appt.notifications.map((n) => (
                     <div key={n.id} className="flex items-center justify-between bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 px-3 py-2">

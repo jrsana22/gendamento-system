@@ -85,11 +85,12 @@ export default function CampanhasPage() {
             const cfg = statusConfig[c.status] ?? statusConfig.DRAFT
 
             return (
-              <div key={c.id} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-5">
-                <div className="flex items-start justify-between gap-4">
+              <div key={c.id} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-4">
+                {/* Row 1: title + badges */}
+                <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="font-semibold text-gray-900 dark:text-white">{c.title}</h2>
+                      <h2 className="font-semibold text-gray-900 dark:text-white leading-tight">{c.title}</h2>
                       <Badge variant={cfg.variant}>{cfg.label}</Badge>
                       {c.isRecurring && (
                         <span className="inline-flex items-center gap-1 text-xs text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 rounded-full px-2 py-0.5 border border-purple-200 dark:border-purple-900">
@@ -98,38 +99,41 @@ export default function CampanhasPage() {
                       )}
                     </div>
                     {c.description && (
-                      <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">{c.description}</p>
+                      <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5 line-clamp-2">{c.description}</p>
                     )}
-                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-slate-400">
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5" /> {formatDateTime(c.scheduledAt)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3.5 w-3.5" /> {total} contatos
-                      </span>
-                      {total > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Send className="h-3.5 w-3.5" /> {sent}/{total} enviados
-                        </span>
-                      )}
-                      {confirmed > 0 && (
-                        <span className="flex items-center gap-1 text-green-600 font-medium">
-                          <CheckCircle className="h-3.5 w-3.5" /> {confirmed} confirmados
-                        </span>
-                      )}
-                    </div>
                   </div>
+                </div>
 
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {c.status === 'DRAFT' && total > 0 && (
-                      <Button size="sm" onClick={() => handleStart(c.id, c.title)}>
-                        <Send className="h-3.5 w-3.5" /> Iniciar disparo
-                      </Button>
-                    )}
-                    <Link href={`/dashboard/campanhas/${c.id}`}>
-                      <Button size="sm" variant="secondary">Ver detalhes</Button>
-                    </Link>
-                  </div>
+                {/* Row 2: meta info */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-slate-400 mb-3">
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" /> {formatDateTime(c.scheduledAt)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Users className="h-3.5 w-3.5" /> {total} contatos
+                  </span>
+                  {total > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Send className="h-3.5 w-3.5" /> {sent}/{total} enviados
+                    </span>
+                  )}
+                  {confirmed > 0 && (
+                    <span className="flex items-center gap-1 text-green-600 font-medium">
+                      <CheckCircle className="h-3.5 w-3.5" /> {confirmed} confirmados
+                    </span>
+                  )}
+                </div>
+
+                {/* Row 3: actions */}
+                <div className="flex items-center gap-2">
+                  {c.status === 'DRAFT' && total > 0 && (
+                    <Button size="sm" onClick={() => handleStart(c.id, c.title)} className="flex-1 sm:flex-none justify-center">
+                      <Send className="h-3.5 w-3.5" /> Iniciar disparo
+                    </Button>
+                  )}
+                  <Link href={`/dashboard/campanhas/${c.id}`} className="flex-1 sm:flex-none">
+                    <Button size="sm" variant="secondary" className="w-full justify-center">Ver detalhes</Button>
+                  </Link>
                 </div>
 
                 {/* Barra de progresso */}

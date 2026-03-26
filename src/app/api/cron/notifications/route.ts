@@ -7,16 +7,20 @@ export const dynamic = 'force-dynamic'
 /**
  * GET /api/cron/notifications
  *
- * Processa lembretes pendentes com rate limit por instância Evolution:
- * → Máximo de 1 mensagem por minuto por instanceName (evita banimento)
+ * Processa TODOS os lembretes pendentes cujo horário chegou em paralelo.
  *
- * Se 25 pessoas têm reunião no mesmo horário e o lembrete dispara junto,
- * o sistema envia 1 por minuto, na ordem de criação do agendamento.
+ * Por que paralelo sem delay?
+ * - Cada mensagem vai para um número/destinatário diferente (não é spam)
+ * - Evolution API suporta chamadas simultâneas
+ * - Vercel Hobby tem timeout de 10s — delay sequencial travaria com muitas pessoas
+ * - Com paralelo: 50 pessoas → ~2-3s de execução
+ *
+ * Risco de ban é para envio em massa de mensagens idênticas a desconhecidos.
+ * Lembretes personalizados a contatos agendados não se enquadram nisso.
  */
 export async function GET() {
   const now = new Date()
 
-  // Busca notificações pendentes cujo horário já chegou
   const pending = await prisma.notification.findMany({
     where: {
       status: 'PENDING',
@@ -28,29 +32,18 @@ export async function GET() {
       },
     },
     orderBy: [
-      // Prioriza por horário do agendamento (mais próximo primeiro)
       { appointment: { scheduledAt: 'asc' } },
-      // Depois por ordem de criação (quem agendou primeiro)
       { createdAt: 'asc' },
     ],
-    take: 200,
+    take: 500,
   })
 
   if (pending.length === 0) {
     return NextResponse.json({ ok: true, processed: 0 })
   }
 
-  // Rate limit: 1 por instanceName por execução do cron
-  const sentInstances = new Set<string>()
-  const toProcess = pending.filter((n) => {
-    const key = n.appointment.client.instanceName
-    if (sentInstances.has(key)) return false
-    sentInstances.add(key)
-    return true
-  })
-
   const results = await Promise.allSettled(
-    toProcess.map(async (notif) => {
+    pending.map(async (notif) => {
       const { appointment } = notif
       const { client } = appointment
 
@@ -87,13 +80,9 @@ export async function GET() {
       })
 
       if (result.success) {
-        console.log(
-          `[notif] ✅ ${client.instanceName} → ${appointment.customerName} (${notif.type})`
-        )
+        console.log(`[notif] ✅ ${client.instanceName} → ${appointment.customerName} (${notif.type})`)
       } else {
-        console.error(
-          `[notif] ❌ ${client.instanceName} → ${appointment.customerName}: ${result.error}`
-        )
+        console.error(`[notif] ❌ ${client.instanceName} → ${appointment.customerName}: ${result.error}`)
       }
 
       return { success: result.success }
@@ -104,15 +93,9 @@ export async function GET() {
     (r) => r.status === 'fulfilled' && (r.value as { success?: boolean }).success
   ).length
   const failed = results.filter(
-    (r) => r.status === 'rejected' || (r.status === 'fulfilled' && !(r.value as { success?: boolean }).success && !(r.value as { skipped?: boolean }).skipped)
+    (r) => r.status === 'rejected' ||
+      (r.status === 'fulfilled' && !(r.value as { success?: boolean }).success && !(r.value as { skipped?: boolean }).skipped)
   ).length
-  const skipped = pending.length - toProcess.length // aguardam próxima rodada (rate limit)
 
-  return NextResponse.json({
-    ok: true,
-    processed: toProcess.length,
-    sent,
-    failed,
-    queued: skipped, // serão enviados no próximo minuto
-  })
+  return NextResponse.json({ ok: true, processed: pending.length, sent, failed })
 }

@@ -62,16 +62,16 @@ export default function NovoAgendamentoPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Novo agendamento</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Lembretes automáticos serão enviados via WhatsApp</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Novo agendamento</h1>
+          <p className="text-gray-500 dark:text-slate-400 text-sm mt-0.5">Lembretes automáticos serão enviados via WhatsApp</p>
         </div>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex items-start gap-3">
-        <Bell className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-blue-800">
+      <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-xl p-4 mb-6 flex items-start gap-3">
+        <Bell className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+        <div className="text-sm text-blue-800 dark:text-blue-300">
           <p className="font-semibold mb-1">Lembretes automáticos incluídos</p>
-          <ul className="space-y-0.5 text-blue-700">
+          <ul className="space-y-0.5 text-blue-700 dark:text-blue-400">
             <li>• 24 horas antes — lembrete do dia seguinte</li>
             <li>• 3 horas antes — confirmação no dia</li>
             <li>• 1 hora antes — aviso próximo</li>
@@ -80,7 +80,7 @@ export default function NovoAgendamentoPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6 space-y-5">
         <Input
           id="title"
           label="Título / tipo de encontro *"
@@ -120,7 +120,7 @@ export default function NovoAgendamentoPage() {
         />
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="notes" className="text-sm font-medium text-gray-700">
+          <label htmlFor="notes" className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Observações (opcional)
           </label>
           <textarea
@@ -129,7 +129,7 @@ export default function NovoAgendamentoPage() {
             placeholder="Informações adicionais sobre o encontro..."
             value={form.notes}
             onChange={(e) => set('notes', e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
 

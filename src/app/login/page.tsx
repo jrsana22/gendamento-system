@@ -36,15 +36,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4">
       <div className="w-full max-w-sm">
-        <div className="bg-white rounded-2xl shadow-lg p-8">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg dark:border dark:border-slate-800 p-8">
           <div className="flex flex-col items-center mb-8">
-            <div className="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center mb-4">
+            <div className="h-12 w-12 rounded-xl bg-blue-600 flex items-center justify-center mb-4 shadow-sm">
               <Calendar className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-gray-900">Agendamentos</h1>
-            <p className="text-sm text-gray-500 mt-1">Entre com sua conta</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Agendamentos</h1>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Entre com sua conta</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">

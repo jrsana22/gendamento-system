@@ -4,19 +4,54 @@ on:
   schedule:
     # Roda a cada 5 minutos
     - cron: '*/5 * * * *'
-  workflow_dispatch: # permite rodar manualmente pelo GitHub
+  workflow_dispatch:
+
+# Evita runs sobrepostos: se um ainda está rodando, o próximo espera
+concurrency:
+  group: notifications
+  cancel-in-progress: false
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - name: Chamar endpoint de notificações
+      - name: Enviar lembretes com intervalo de 30s entre cada um
         run: |
-          response=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
-            "https://agendamento.solucoesdeia.com/api/cron/notifications")
-          cat /tmp/resp.json
-          echo "HTTP status: $response"
-          if [ "$response" != "200" ]; then
-            echo "Falha no endpoint!"
-            exit 1
-          fi
+          MAX=100  # segurança: no máximo 100 mensagens por rodada
+          COUNT=0
+
+          while [ $COUNT -lt $MAX ]; do
+            response=$(curl -s -w "\n%{http_code}" \
+              "https://agendamento.solucoesdeia.com/api/cron/notifications")
+
+            http_code=$(echo "$response" | tail -1)
+            body=$(echo "$response" | head -1)
+
+            echo "[$COUNT] HTTP $http_code | $body"
+
+            if [ "$http_code" != "200" ]; then
+              echo "Erro no endpoint (HTTP $http_code). Abortando."
+              exit 1
+            fi
+
+            # Extrai quantas ainda estão pendentes
+            remaining=$(echo "$body" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('remaining', 0))" 2>/dev/null || echo "0")
+            sent=$(echo "$body" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('sent', 0))" 2>/dev/null || echo "0")
+
+            # Se não enviou nada e não há pendentes, termina
+            if [ "$remaining" -eq "0" ] && [ "$sent" -eq "0" ]; then
+              echo "Nenhum lembrete pendente. Concluído."
+              break
+            fi
+
+            COUNT=$((COUNT + 1))
+
+            # Se ainda há mais pendentes, aguarda 30s antes do próximo envio
+            if [ "$remaining" -gt "0" ]; then
+              echo "Aguardando 30s antes do próximo envio... ($remaining restantes)"
+              sleep 30
+            fi
+          done
+
+          echo "Total de chamadas: $COUNT"

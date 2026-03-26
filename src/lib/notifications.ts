@@ -2,7 +2,8 @@ import { prisma } from './db'
 
 /**
  * Cria os 4 lembretes para um agendamento.
- * Só cria lembretes que ainda não passaram.
+ * Sempre cria os 4 — os que já passaram ficam com status FAILED
+ * para o usuário ver o histórico completo (ex: 0/4 em vez de 0/0).
  */
 export async function scheduleNotifications(appointmentId: string, scheduledAt: Date) {
   const now = new Date()
@@ -14,14 +15,15 @@ export async function scheduleNotifications(appointmentId: string, scheduledAt: 
     { type: '15MIN', minutes: 15 },
   ]
 
-  // Se o agendamento já passou, não cria nenhum lembrete
-  if (scheduledAt <= now) return
-
-  const toCreate = offsets.map(({ type, minutes }) => ({
-    appointmentId,
-    type,
-    scheduledAt: new Date(scheduledAt.getTime() - minutes * 60 * 1000),
-  }))
+  const toCreate = offsets.map(({ type, minutes }) => {
+    const notifAt = new Date(scheduledAt.getTime() - minutes * 60 * 1000)
+    return {
+      appointmentId,
+      type,
+      scheduledAt: notifAt,
+      status: notifAt > now ? 'PENDING' : 'FAILED',
+    }
+  })
 
   await prisma.notification.createMany({ data: toCreate })
 }

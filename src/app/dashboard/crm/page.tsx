@@ -1,7 +1,11 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Phone, User, Search, ChevronDown, ChevronUp, Pencil, X, GripVertical, Archive, ChevronRight, Trash2 } from 'lucide-react'
+import {
+  Phone, Search, GripVertical, Archive, ChevronRight,
+  Trash2, Pencil, X, RotateCcw, Calendar, Bell,
+  ChevronDown, ChevronUp,
+} from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
   DndContext,
@@ -17,6 +21,11 @@ import {
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 
+interface Notif {
+  id: string
+  status: string
+}
+
 interface Appointment {
   id: string
   title: string
@@ -25,42 +34,56 @@ interface Appointment {
   scheduledAt: string
   notes?: string
   status: string
+  notifications: Notif[]
 }
 
 const COLUMNS = [
-  { key: 'SCHEDULED', label: 'Agendado', color: 'blue' },
-  { key: 'DONE', label: 'Compareceu', color: 'green' },
-  { key: 'CANCELLED', label: 'Não compareceu', color: 'red' },
+  { key: 'SCHEDULED', label: 'Agendado',        color: 'blue'  },
+  { key: 'DONE',      label: 'Compareceu',       color: 'green' },
+  { key: 'CANCELLED', label: 'Não compareceu',   color: 'red'   },
 ]
 
 const colStyle: Record<string, string> = {
-  blue:   'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900',
-  green:  'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900',
-  red:    'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900',
+  blue:  'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900',
+  green: 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900',
+  red:   'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900',
 }
 
 const colStyleOver: Record<string, string> = {
-  blue:   'bg-blue-100 dark:bg-blue-950/40 border-blue-400 dark:border-blue-600',
-  green:  'bg-green-100 dark:bg-green-950/40 border-green-400 dark:border-green-600',
-  red:    'bg-red-100 dark:bg-red-950/40 border-red-400 dark:border-red-600',
+  blue:  'bg-blue-100 dark:bg-blue-950/40 border-blue-400 dark:border-blue-600',
+  green: 'bg-green-100 dark:bg-green-950/40 border-green-400 dark:border-green-600',
+  red:   'bg-red-100 dark:bg-red-950/40 border-red-400 dark:border-red-600',
 }
 
 const headerStyle: Record<string, string> = {
-  blue:   'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-  green:  'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
-  red:    'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  blue:  'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+  green: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+  red:   'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
 }
 
-const badgeStyle: Record<string, string> = {
-  SCHEDULED: 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300',
-  DONE:      'bg-green-100 dark:bg-green-950/60 text-green-700 dark:text-green-300',
-  CANCELLED: 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300',
+const moveChipStyle: Record<string, string> = {
+  SCHEDULED: 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60',
+  DONE:      'bg-green-100 dark:bg-green-950/60 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60',
+  CANCELLED: 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60',
 }
 
 const dateGroupStyle: Record<string, string> = {
-  blue:   'bg-blue-200 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200',
-  green:  'bg-green-200 dark:bg-green-900/50 text-green-800 dark:text-green-200',
-  red:    'bg-red-200 dark:bg-red-900/50 text-red-800 dark:text-red-200',
+  blue:  'bg-blue-200 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200',
+  green: 'bg-green-200 dark:bg-green-900/50 text-green-800 dark:text-green-200',
+  red:   'bg-red-200 dark:bg-red-900/50 text-red-800 dark:text-red-200',
+}
+
+const MOVE_LABEL: Record<string, string> = {
+  SCHEDULED: 'Agend.',
+  DONE:      'Comp.',
+  CANCELLED: 'N.Comp.',
+}
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('pt-BR', {
+    weekday: 'short', day: '2-digit', month: '2-digit',
+    timeZone: 'America/Sao_Paulo',
+  })
 }
 
 function formatDateGroup(dateStr: string) {
@@ -80,11 +103,33 @@ function groupByDate(appointments: Appointment[]) {
   return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b))
 }
 
+/** Calcula a próxima quinta-feira às 09:00 (horário de Brasília) */
+function nextThursdayAt9(): Date {
+  const now = new Date()
+  const sp = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }))
+  const day = sp.getDay() // 0=Dom … 4=Qui
+
+  let daysAhead: number
+  if (day === 4) {
+    const h = sp.getHours(), m = sp.getMinutes()
+    daysAhead = (h < 9 || (h === 9 && m < 15)) ? 0 : 7
+  } else if (day < 4) {
+    daysAhead = 4 - day
+  } else {
+    daysAhead = 4 + 7 - day
+  }
+
+  const thursday = new Date(sp)
+  thursday.setDate(sp.getDate() + daysAhead)
+  thursday.setHours(9, 0, 0, 0)
+  return thursday
+}
+
 const INITIAL_SHOW = 5
 
-// ── Draggable Card ──────────────────────────────────────────────
-function DraggableCard({
-  appt, col, others, moving, onEdit, onMove, onDelete, overlay = false,
+// ── Kanban Card ────────────────────────────────────────────────
+function KanbanCard({
+  appt, col, others, moving, onEdit, onMove, onDelete, onReinvite, overlay = false,
 }: {
   appt: Appointment
   col: typeof COLUMNS[0]
@@ -93,76 +138,118 @@ function DraggableCard({
   onEdit: (a: Appointment) => void
   onMove: (id: string, status: string) => void
   onDelete: (id: string, name: string) => void
+  onReinvite: (a: Appointment) => void
   overlay?: boolean
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: appt.id })
 
   const style = {
     transform: CSS.Translate.toString(transform),
-    opacity: isDragging && !overlay ? 0.35 : 1,
+    opacity: isDragging && !overlay ? 0.3 : 1,
     touchAction: 'none' as const,
   }
+
+  const sentCount = appt.notifications.filter(n => n.status === 'SENT').length
+  const totalCount = appt.notifications.length
+  const hasMissed = appt.notifications.some(n => n.status === 'FAILED')
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm p-3 space-y-2 transition-shadow ${
-        overlay ? 'shadow-2xl rotate-1 scale-105' : 'cursor-grab active:cursor-grabbing'
+      className={`bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden transition-shadow select-none ${
+        overlay ? 'shadow-2xl rotate-1 scale-105' : ''
       }`}
     >
-      <div className="flex items-start gap-2">
-        {/* Drag handle */}
-        <div
-          {...listeners}
-          {...attributes}
-          className="mt-0.5 flex-shrink-0 text-gray-300 dark:text-slate-600 hover:text-gray-400 dark:hover:text-slate-400 cursor-grab active:cursor-grabbing"
-        >
-          <GripVertical className="h-4 w-4" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <span className="text-sm font-semibold text-gray-900 dark:text-white leading-tight block truncate">
-            {appt.customerName}
-          </span>
-          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-slate-400 mt-0.5">
-            <Phone className="h-3 w-3 flex-shrink-0" />
-            {appt.customerPhone}
+      {/* Card body */}
+      <div className="p-3 space-y-1.5">
+        <div className="flex items-start gap-2">
+          {/* Drag handle */}
+          <div
+            {...listeners}
+            {...attributes}
+            className="mt-0.5 flex-shrink-0 text-gray-300 dark:text-slate-600 hover:text-gray-500 dark:hover:text-slate-400 cursor-grab active:cursor-grabbing touch-none"
+          >
+            <GripVertical className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-gray-900 dark:text-white text-sm leading-tight truncate">
+              {appt.customerName}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-1 mt-0.5 truncate">
+              <Phone className="h-3 w-3 flex-shrink-0" />
+              {appt.customerPhone}
+            </p>
           </div>
         </div>
+
+        {/* Date + notifications badge */}
+        <div className="flex items-center justify-between text-xs pl-6">
+          <span className="flex items-center gap-1 text-gray-400 dark:text-slate-500">
+            <Calendar className="h-3 w-3" />
+            {formatDate(appt.scheduledAt)}
+          </span>
+          <span className={`flex items-center gap-1 font-medium ${
+            hasMissed
+              ? 'text-amber-400 dark:text-amber-500'
+              : totalCount === 0
+                ? 'text-gray-300 dark:text-slate-600'
+                : 'text-gray-400 dark:text-slate-500'
+          }`}>
+            <Bell className="h-3 w-3" />
+            {sentCount}/{totalCount}
+          </span>
+        </div>
+
+        {appt.notes && (
+          <p className="text-xs text-gray-400 dark:text-slate-500 italic truncate pl-6">{appt.notes}</p>
+        )}
       </div>
 
-      {appt.notes && (
-        <p className="text-xs text-gray-400 dark:text-slate-500 italic truncate">{appt.notes}</p>
-      )}
-
+      {/* Action bar */}
       {!overlay && (
-        <div className="flex flex-wrap gap-1 pt-1 border-t border-gray-100 dark:border-slate-800">
+        <div className="flex items-stretch border-t border-gray-100 dark:border-slate-800 divide-x divide-gray-100 dark:divide-slate-800">
+          {/* Edit */}
           <button
             onClick={() => onEdit(appt)}
-            className="text-xs px-2 py-1 rounded-md font-medium bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 flex items-center gap-1"
+            title="Editar"
+            className="px-2.5 py-2 text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
           >
-            <Pencil className="h-3 w-3" /> Editar
+            <Pencil className="h-3.5 w-3.5" />
           </button>
-          {others.map((o) => {
-            const currentIdx = COLUMNS.findIndex(c => c.key === col.key)
-            const targetIdx = COLUMNS.findIndex(c => c.key === o.key)
-            const arrow = targetIdx < currentIdx ? '←' : '→'
-            return (
+
+          {/* Move chips */}
+          <div className="flex items-center gap-1 px-2 py-1.5 flex-1 flex-wrap">
+            {others.map((o) => (
               <button
                 key={o.key}
                 disabled={moving === appt.id}
                 onClick={() => onMove(appt.id, o.key)}
-                className={`text-xs px-2 py-1 rounded-md font-medium transition-opacity ${badgeStyle[o.key]} hover:opacity-80 disabled:opacity-40`}
+                className={`text-xs px-2 py-0.5 rounded-md font-medium transition-opacity disabled:opacity-40 ${moveChipStyle[o.key]}`}
               >
-                {arrow} {o.label}
+                {MOVE_LABEL[o.key]}
               </button>
-            )
-          })}
+            ))}
+          </div>
+
+          {/* Novo convite — só no CANCELLED */}
+          {col.key === 'CANCELLED' && (
+            <button
+              onClick={() => onReinvite(appt)}
+              title="Novo convite (próxima quinta)"
+              className="px-2.5 py-2 text-blue-400 dark:text-blue-500 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors flex items-center justify-center"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+            </button>
+          )}
+
+          {/* Delete */}
           <button
             onClick={() => onDelete(appt.id, appt.customerName)}
-            className="ml-auto text-xs px-2 py-1 rounded-md font-medium text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 transition-colors flex items-center gap-1"
+            title="Excluir"
+            className="px-2.5 py-2 text-red-300 dark:text-red-700/70 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center justify-center"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
@@ -172,7 +259,7 @@ function DraggableCard({
 
 // ── Droppable Column ────────────────────────────────────────────
 function DroppableColumn({
-  col, cards, moving, expanded, onToggleExpand, onEdit, onMove, onDelete,
+  col, cards, moving, expanded, onToggleExpand, onEdit, onMove, onDelete, onReinvite,
 }: {
   col: typeof COLUMNS[0]
   cards: Appointment[]
@@ -182,6 +269,7 @@ function DroppableColumn({
   onEdit: (a: Appointment) => void
   onMove: (id: string, status: string) => void
   onDelete: (id: string, name: string) => void
+  onReinvite: (a: Appointment) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: col.key })
   const others = COLUMNS.filter(c => c.key !== col.key)
@@ -198,15 +286,17 @@ function DroppableColumn({
     }
     return result
   })()
+
   const hiddenCount = cards.length - visibleGroups.flatMap(([, c]) => c).length
 
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-xl border-2 flex flex-col transition-all duration-150 ${
+      className={`rounded-xl border-2 flex flex-col transition-all duration-150 min-h-[200px] ${
         isOver ? colStyleOver[col.color] : colStyle[col.color]
       }`}
     >
+      {/* Header */}
       <div className={`rounded-t-xl px-4 py-3 flex items-center justify-between ${headerStyle[col.color]}`}>
         <span className="font-semibold text-sm">{col.label}</span>
         <span className="text-xs font-bold bg-white dark:bg-slate-900 bg-opacity-60 rounded-full px-2 py-0.5">
@@ -214,11 +304,12 @@ function DroppableColumn({
         </span>
       </div>
 
+      {/* Cards */}
       <div className="flex flex-col gap-2 p-3 flex-1">
         {cards.length === 0 && (
-          <div className={`flex items-center justify-center py-8 rounded-xl border-2 border-dashed transition-colors ${
+          <div className={`flex items-center justify-center py-10 rounded-xl border-2 border-dashed transition-colors ${
             isOver
-              ? 'border-current opacity-60 bg-white/20 dark:bg-white/5'
+              ? 'border-current opacity-50 bg-white/20 dark:bg-white/5'
               : 'border-gray-200 dark:border-slate-700'
           }`}>
             <p className="text-xs text-gray-400 dark:text-slate-500">
@@ -229,12 +320,12 @@ function DroppableColumn({
 
         {visibleGroups.map(([dateKey, items]) => (
           <div key={dateKey}>
-            <div className={`text-xs font-semibold px-2 py-1 rounded-md mb-1 ${dateGroupStyle[col.color]}`}>
+            <div className={`text-xs font-semibold px-2 py-1 rounded-md mb-2 ${dateGroupStyle[col.color]}`}>
               {formatDateGroup(dateKey + 'T12:00:00')}
             </div>
             <div className="flex flex-col gap-2">
               {items.map((appt) => (
-                <DraggableCard
+                <KanbanCard
                   key={appt.id}
                   appt={appt}
                   col={col}
@@ -243,6 +334,7 @@ function DroppableColumn({
                   onEdit={onEdit}
                   onMove={onMove}
                   onDelete={onDelete}
+                  onReinvite={onReinvite}
                 />
               ))}
             </div>
@@ -252,7 +344,7 @@ function DroppableColumn({
         {cards.length > INITIAL_SHOW && (
           <button
             onClick={onToggleExpand}
-            className="flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300 py-1 font-medium"
+            className="flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 py-1 font-medium"
           >
             {expanded
               ? <><ChevronUp className="h-3 w-3" /> Ocultar</>
@@ -260,121 +352,6 @@ function DroppableColumn({
             }
           </button>
         )}
-      </div>
-    </div>
-  )
-}
-
-// ── Mobile Kanban — tab única com auto-switch ─────────────────────
-const COL_ABBREV: Record<string, string> = {
-  SCHEDULED: 'Agendado',
-  DONE: 'Compareceu',
-  CANCELLED: 'N. Comp.',
-}
-const COL_MOVE_LABEL: Record<string, string> = {
-  SCHEDULED: 'Agend.',
-  DONE: 'Comp.',
-  CANCELLED: 'N.Comp',
-}
-
-function MobileKanban({
-  filtered, moving, onEdit, onMove, onDelete,
-}: {
-  filtered: Appointment[]
-  moving: string | null
-  onEdit: (a: Appointment) => void
-  onMove: (id: string, status: string) => void
-  onDelete: (id: string, name: string) => void
-}) {
-  const [activeIdx, setActiveIdx] = useState(0)
-
-  function moveAndSwitch(id: string, targetKey: string) {
-    onMove(id, targetKey)
-    const idx = COLUMNS.findIndex(c => c.key === targetKey)
-    if (idx !== -1) setTimeout(() => setActiveIdx(idx), 120)
-  }
-
-  const col = COLUMNS[activeIdx]
-  const cards = filtered.filter(a => a.status === col.key)
-  const others = COLUMNS.filter(c => c.key !== col.key)
-  const groups = groupByDate(cards)
-
-  return (
-    <div className="md:hidden w-full space-y-3">
-      {/* Tab bar */}
-      <div className={`flex rounded-xl border-2 overflow-hidden ${colStyle[col.color]}`}>
-        {COLUMNS.map((c, i) => {
-          const count = filtered.filter(a => a.status === c.key).length
-          const isActive = i === activeIdx
-          return (
-            <button
-              key={c.key}
-              onClick={() => setActiveIdx(i)}
-              className={`flex-1 py-2.5 text-center transition-all ${
-                isActive
-                  ? headerStyle[c.color] + ' font-bold'
-                  : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
-              }`}
-            >
-              <span className="text-xs leading-none block">{COL_ABBREV[c.key]}</span>
-              <span className={`text-sm font-bold mt-0.5 block ${isActive ? '' : 'text-gray-500 dark:text-slate-400'}`}>{count}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Cards da coluna ativa */}
-      <div className="space-y-3 w-full">
-        {cards.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 rounded-xl border-2 border-dashed border-gray-200 dark:border-slate-700">
-            <p className="text-sm text-gray-400 dark:text-slate-500">Nenhum contato nesta coluna</p>
-          </div>
-        )}
-
-        {groups.map(([dateKey, items]) => (
-          <div key={dateKey} className="space-y-2">
-            <div className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${dateGroupStyle[col.color]}`}>
-              {formatDateGroup(dateKey + 'T12:00:00')}
-            </div>
-
-            {items.map((appt) => (
-              <div key={appt.id} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm w-full overflow-hidden">
-                {/* Info */}
-                <div className="px-4 py-3 space-y-1">
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{appt.customerName}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{appt.customerPhone}</p>
-                  {appt.notes && <p className="text-xs text-gray-400 dark:text-slate-500 italic truncate">{appt.notes}</p>}
-                </div>
-
-                {/* Ações */}
-                <div className="flex border-t border-gray-100 dark:border-slate-800">
-                  <button
-                    onClick={() => onEdit(appt)}
-                    className="flex-1 py-2.5 text-xs font-medium text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1"
-                  >
-                    <Pencil className="h-3.5 w-3.5" /> Editar
-                  </button>
-                  {others.map((o) => (
-                    <button
-                      key={o.key}
-                      disabled={moving === appt.id}
-                      onClick={() => moveAndSwitch(appt.id, o.key)}
-                      className={`flex-1 py-2.5 text-xs font-bold transition-colors disabled:opacity-40 border-l border-gray-100 dark:border-slate-800 flex items-center justify-center ${badgeStyle[o.key]} hover:opacity-80`}
-                    >
-                      {COL_MOVE_LABEL[o.key]}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => onDelete(appt.id, appt.customerName)}
-                    className="px-3 py-2.5 border-l border-gray-100 dark:border-slate-800 text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center justify-center"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
       </div>
     </div>
   )
@@ -393,28 +370,61 @@ export default function CRMPage() {
   const [draggedAppt, setDraggedAppt] = useState<Appointment | null>(null)
   const [archiveModal, setArchiveModal] = useState(false)
   const [archivingDate, setArchivingDate] = useState<string | null>(null)
+  const appointmentsRef = useRef<Appointment[]>([])
 
-  // Touch sensor: delay + tolerance so tapping buttons still works
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
   )
 
   const fetchAppointments = useCallback(async () => {
     const res = await fetch('/api/appointments')
     const data = await res.json()
     setAppointments(data)
+    appointmentsRef.current = data
     setLoading(false)
   }, [])
 
   useEffect(() => { fetchAppointments() }, [fetchAppointments])
+
+  // Auto-refresh a cada 20s — notifica novos leads
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/appointments')
+        if (!res.ok) return
+        const data: Appointment[] = await res.json()
+        const currentIds = new Set(appointmentsRef.current.map(a => a.id))
+        const newLeads = data.filter(a => !currentIds.has(a.id))
+        if (newLeads.length > 0) {
+          toast.success(
+            newLeads.length === 1
+              ? `🎉 Novo lead: ${newLeads[0].customerName}`
+              : `🎉 ${newLeads.length} novos leads chegaram!`,
+            { duration: 5000 }
+          )
+        }
+        setAppointments(data)
+        appointmentsRef.current = data
+      } catch {
+        // falha silenciosa — não interrompe UX
+      }
+    }, 20000)
+    return () => clearInterval(interval)
+  }, [])
 
   function openEdit(appt: Appointment) {
     const localDT = new Date(appt.scheduledAt)
       .toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' })
       .replace(' ', 'T')
       .slice(0, 16)
-    setEditForm({ title: appt.title, customerName: appt.customerName, customerPhone: appt.customerPhone, scheduledAt: localDT, notes: appt.notes || '' })
+    setEditForm({
+      title: appt.title,
+      customerName: appt.customerName,
+      customerPhone: appt.customerPhone,
+      scheduledAt: localDT,
+      notes: appt.notes || '',
+    })
     setEditingAppt(appt)
   }
 
@@ -428,8 +438,14 @@ export default function CRMPage() {
       body: JSON.stringify({ ...editForm, scheduledAt: new Date(editForm.scheduledAt).toISOString() }),
     })
     setSaving(false)
-    if (res.ok) { toast.success('Agendamento atualizado'); setEditingAppt(null); fetchAppointments() }
-    else { const d = await res.json(); toast.error(d.error || 'Erro ao atualizar') }
+    if (res.ok) {
+      toast.success('Agendamento atualizado')
+      setEditingAppt(null)
+      fetchAppointments()
+    } else {
+      const d = await res.json()
+      toast.error(d.error || 'Erro ao atualizar')
+    }
   }
 
   async function handleDelete(id: string, name: string) {
@@ -443,8 +459,34 @@ export default function CRMPage() {
     }
   }
 
+  async function handleReinvite(appt: Appointment) {
+    const thursday = nextThursdayAt9()
+    const dateLabel = thursday.toLocaleDateString('pt-BR', {
+      weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric',
+      timeZone: 'America/Sao_Paulo',
+    })
+    if (!confirm(`Criar novo convite para ${appt.customerName} na próxima quinta?\n${dateLabel} às 09:00`)) return
+
+    const res = await fetch('/api/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: appt.title,
+        customerName: appt.customerName,
+        customerPhone: appt.customerPhone,
+        scheduledAt: thursday.toISOString(),
+      }),
+    })
+    if (res.ok) {
+      toast.success(`Novo convite criado para ${appt.customerName}`)
+      fetchAppointments()
+    } else {
+      const d = await res.json()
+      toast.error(d.error || 'Erro ao criar novo convite')
+    }
+  }
+
   async function moveCard(id: string, newStatus: string) {
-    // Optimistic update
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a))
     setMoving(id)
     const res = await fetch(`/api/appointments/${id}`, {
@@ -453,14 +495,12 @@ export default function CRMPage() {
       body: JSON.stringify({ status: newStatus }),
     })
     if (!res.ok) {
-      // Revert on error
       await fetchAppointments()
       toast.error('Erro ao mover card')
     }
     setMoving(null)
   }
 
-  // Unique meeting dates from loaded appointments
   const meetingDates = Array.from(
     new Set(appointments.map(a =>
       new Date(a.scheduledAt).toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' })
@@ -501,19 +541,24 @@ export default function CRMPage() {
     moveCard(String(active.id), targetCol.key)
   }
 
-  const filtered = appointments.filter((a) =>
+  const filtered = appointments.filter(a =>
     a.customerName.toLowerCase().includes(search.toLowerCase()) ||
     a.customerPhone.includes(search)
   )
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-gray-400 dark:text-slate-500">Carregando...</div>
+    return (
+      <div className="flex items-center justify-center h-64 text-gray-400 dark:text-slate-500">
+        Carregando...
+      </div>
+    )
   }
 
   return (
     <>
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Acompanhamento de Leads</h1>
@@ -540,45 +585,55 @@ export default function CRMPage() {
         </div>
       </div>
 
-      {/* Desktop: 4 columns with drag-and-drop */}
-      <div className="hidden md:grid grid-cols-4 gap-4">
+      {/*
+        Kanban unificado:
+        • Mobile: scroll horizontal com snap (colunas 88vw = peek da próxima visível)
+        • Desktop: grid 3 colunas
+        O TouchSensor do dnd-kit permite arrastar no mobile (pressionar 250ms + mover).
+      */}
+      <div className="flex gap-3 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory
+                      md:mx-0 md:px-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:pb-0">
         {COLUMNS.map((col) => (
-          <DroppableColumn
+          <div
             key={col.key}
-            col={col}
-            cards={filtered.filter(a => a.status === col.key)}
-            moving={moving}
-            expanded={!!expanded[col.key]}
-            onToggleExpand={() => setExpanded(e => ({ ...e, [col.key]: !e[col.key] }))}
-            onEdit={openEdit}
-            onMove={moveCard}
-            onDelete={handleDelete}
-          />
+            className="w-[88vw] min-w-[280px] flex-shrink-0 snap-start
+                       md:w-auto md:min-w-0 md:flex-none"
+          >
+            <DroppableColumn
+              col={col}
+              cards={filtered.filter(a => a.status === col.key)}
+              moving={moving}
+              expanded={!!expanded[col.key]}
+              onToggleExpand={() => setExpanded(e => ({ ...e, [col.key]: !e[col.key] }))}
+              onEdit={openEdit}
+              onMove={moveCard}
+              onDelete={handleDelete}
+              onReinvite={handleReinvite}
+            />
+          </div>
         ))}
       </div>
 
-      {/* Mobile: horizontal scroll kanban */}
-      <MobileKanban
-        filtered={filtered}
-        moving={moving}
-        onEdit={openEdit}
-        onMove={moveCard}
-        onDelete={handleDelete}
-      />
+      {/* Dica mobile */}
+      <p className="text-center text-xs text-gray-400 dark:text-slate-600 md:hidden">
+        Deslize para ver as colunas · Pressione e arraste para mover cards
+      </p>
     </div>
 
-    {/* Drag overlay — the floating card while dragging */}
+    {/* Drag overlay — card flutuante ao arrastar */}
     <DragOverlay dropAnimation={{ duration: 180, easing: 'ease' }}>
       {draggedAppt ? (() => {
         const col = COLUMNS.find(c => c.key === draggedAppt.status) ?? COLUMNS[0]
         return (
-          <DraggableCard
+          <KanbanCard
             appt={draggedAppt}
             col={col}
             others={[]}
             moving={null}
             onEdit={() => {}}
             onMove={() => {}}
+            onDelete={() => {}}
+            onReinvite={() => {}}
             overlay
           />
         )
@@ -586,7 +641,7 @@ export default function CRMPage() {
     </DragOverlay>
     </DndContext>
 
-    {/* Modal de arquivar encontro */}
+    {/* Modal: arquivar encontro */}
     {archiveModal && (
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-4">
         <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:border dark:border-slate-800">
@@ -599,12 +654,10 @@ export default function CRMPage() {
               <X className="h-5 w-5" />
             </button>
           </div>
-
           <div className="px-6 py-4 space-y-3">
             <p className="text-sm text-gray-500 dark:text-slate-400">
               Selecione o encontro para arquivar. Os leads sumirão desta tela e ficam salvos no histórico.
             </p>
-
             {meetingDates.length === 0 ? (
               <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-4">Nenhum encontro ativo</p>
             ) : (
@@ -642,7 +695,7 @@ export default function CRMPage() {
       </div>
     )}
 
-    {/* Modal de edição */}
+    {/* Modal: editar agendamento */}
     {editingAppt && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
         <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl dark:border dark:border-slate-800">
@@ -655,29 +708,65 @@ export default function CRMPage() {
           <form onSubmit={handleEdit} className="px-6 py-5 space-y-4">
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Título *</label>
-              <input value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} required className="rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <input
+                value={editForm.title}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                required
+                className="rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Nome *</label>
-                <input value={editForm.customerName} onChange={(e) => setEditForm({ ...editForm, customerName: e.target.value })} required className="rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <input
+                  value={editForm.customerName}
+                  onChange={(e) => setEditForm({ ...editForm, customerName: e.target.value })}
+                  required
+                  className="rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700 dark:text-slate-300">WhatsApp *</label>
-                <input value={editForm.customerPhone} onChange={(e) => setEditForm({ ...editForm, customerPhone: e.target.value })} required className="rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <input
+                  value={editForm.customerPhone}
+                  onChange={(e) => setEditForm({ ...editForm, customerPhone: e.target.value })}
+                  required
+                  className="rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
               </div>
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Data e horário *</label>
-              <input type="datetime-local" value={editForm.scheduledAt} onChange={(e) => setEditForm({ ...editForm, scheduledAt: e.target.value })} required className="rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <input
+                type="datetime-local"
+                value={editForm.scheduledAt}
+                onChange={(e) => setEditForm({ ...editForm, scheduledAt: e.target.value })}
+                required
+                className="rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700 dark:text-slate-300">Observações</label>
-              <textarea rows={2} value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} className="rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <textarea
+                rows={2}
+                value={editForm.notes}
+                onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                className="rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
             </div>
             <div className="flex justify-end gap-3 pt-1">
-              <button type="button" onClick={() => setEditingAppt(null)} className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800">Cancelar</button>
-              <button type="submit" disabled={saving} className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50">
+              <button
+                type="button"
+                onClick={() => setEditingAppt(null)}
+                className="px-4 py-2 text-sm font-medium border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50"
+              >
                 {saving ? 'Salvando...' : 'Salvar'}
               </button>
             </div>

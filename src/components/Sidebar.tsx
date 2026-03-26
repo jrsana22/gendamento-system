@@ -36,13 +36,13 @@ export function Sidebar({ role, name }: SidebarProps) {
     { href: '/dashboard/perfil', label: 'Meu Perfil', icon: UserCircle },
   ]
 
-  // Bottom nav mobile — 5 tabs mais usados
+  // Bottom nav mobile — 5 tabs
   const mobileLinks = [
     { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
     { href: '/dashboard/agendamentos', label: 'Agenda', icon: Calendar },
     { href: '/dashboard/crm', label: 'Leads', icon: KanbanSquare },
     { href: '/dashboard/campanhas', label: 'Campanhas', icon: Megaphone },
-    { href: '/dashboard/notificacoes', label: 'Notif.', icon: Bell },
+    { href: '/dashboard/perfil', label: 'Perfil', icon: UserCircle },
   ]
 
   const links = role === 'ADMIN' ? adminLinks : clientLinks
@@ -147,7 +147,7 @@ export function Sidebar({ role, name }: SidebarProps) {
           <span className="font-bold text-gray-900 dark:text-white text-sm">Agendamentos</span>
         </div>
 
-        {/* Right side: tema + avatar */}
+        {/* Right side: tema + logout */}
         <div className="flex items-center gap-1">
           <button
             onClick={toggle}
@@ -157,13 +157,13 @@ export function Sidebar({ role, name }: SidebarProps) {
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
 
-          <Link
-            href="/dashboard/perfil"
-            className="h-9 w-9 rounded-full bg-blue-600 flex items-center justify-center hover:bg-blue-700 transition-all"
-            aria-label="Meu Perfil"
+          <button
+            onClick={handleLogout}
+            className="h-9 w-9 rounded-xl flex items-center justify-center text-gray-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 transition-all"
+            aria-label="Sair"
           >
-            <span className="text-white text-xs font-bold">{initials}</span>
-          </Link>
+            <LogOut className="h-5 w-5" />
+          </button>
         </div>
       </div>
 

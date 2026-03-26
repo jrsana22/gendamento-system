@@ -1,17 +1,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { User, Lock } from 'lucide-react'
+import { User, Lock, Bell, LogOut } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 export default function PerfilPage() {
+  const router = useRouter()
   const [profile, setProfile] = useState({ name: '', phone: '', email: '' })
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [savingProfile, setSavingProfile] = useState(false)
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [savingPw, setSavingPw] = useState(false)
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.push('/login')
+    router.refresh()
+  }
 
   useEffect(() => {
     fetch('/api/profile').then(r => r.json()).then(d => {
@@ -130,6 +139,38 @@ export default function PerfilPage() {
             <Button type="submit" loading={savingPw}>Alterar senha</Button>
           </div>
         </form>
+      </div>
+
+      {/* Links rápidos */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden">
+        <Link
+          href="/dashboard/notificacoes"
+          className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all border-b border-gray-100 dark:border-slate-800"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-blue-100 dark:bg-blue-950/60 flex items-center justify-center">
+              <Bell className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">Notificações</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500">Lembretes via WhatsApp</p>
+            </div>
+          </div>
+          <span className="text-gray-400 dark:text-slate-500 text-sm">›</span>
+        </Link>
+
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 px-5 py-4 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all text-left"
+        >
+          <div className="h-9 w-9 rounded-full bg-red-100 dark:bg-red-950/60 flex items-center justify-center">
+            <LogOut className="h-4 w-4 text-red-600 dark:text-red-400" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-red-600 dark:text-red-400">Sair da conta</p>
+            <p className="text-xs text-gray-400 dark:text-slate-500">Encerrar sessão</p>
+          </div>
+        </button>
       </div>
     </div>
   )

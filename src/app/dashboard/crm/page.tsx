@@ -262,69 +262,20 @@ function DroppableColumn({
   )
 }
 
-// ── Mobile Column Card (droppable, needs own component for hook) ──
-function MobileColumnCard({
-  col, cards, moving, onEdit, onMove, onMoveAndShow,
-}: {
-  col: typeof COLUMNS[0]
-  cards: Appointment[]
-  moving: string | null
-  onEdit: (a: Appointment) => void
-  onMove: (id: string, status: string) => void
-  onMoveAndShow: (id: string, targetKey: string) => void
-}) {
-  const { setNodeRef, isOver } = useDroppable({ id: col.key + '_mobile' })
-  const others = COLUMNS.filter(c => c.key !== col.key)
-  const groups = groupByDate(cards)
-
-  return (
-    <div
-      ref={setNodeRef}
-      className={`snap-start flex-shrink-0 w-[82vw] rounded-xl border-2 flex flex-col max-h-[calc(100vh-260px)] overflow-hidden transition-all ${
-        isOver ? colStyleOver[col.color] : colStyle[col.color]
-      }`}
-    >
-      {/* Column header */}
-      <div className={`flex-shrink-0 px-4 py-2.5 flex items-center justify-between ${headerStyle[col.color]}`}>
-        <span className="font-semibold text-sm">{col.label}</span>
-        <span className="text-xs font-bold bg-white dark:bg-slate-900 bg-opacity-60 rounded-full px-2 py-0.5">{cards.length}</span>
-      </div>
-
-      {/* Scrollable card list */}
-      <div className="flex-1 overflow-y-auto flex flex-col gap-2 p-3">
-        {cards.length === 0 && (
-          <div className={`flex items-center justify-center py-10 rounded-xl border-2 border-dashed ${
-            isOver ? 'border-current opacity-60' : 'border-gray-200 dark:border-slate-700'
-          }`}>
-            <p className="text-xs text-gray-400 dark:text-slate-500">{isOver ? 'Solte aqui' : 'Nenhum contato'}</p>
-          </div>
-        )}
-        {groups.map(([dateKey, items]) => (
-          <div key={dateKey}>
-            <div className={`text-xs font-semibold px-2 py-1 rounded-md mb-1 ${dateGroupStyle[col.color]}`}>
-              {formatDateGroup(dateKey + 'T12:00:00')}
-            </div>
-            <div className="flex flex-col gap-2">
-              {items.map((appt) => (
-                <DraggableCard
-                  key={appt.id}
-                  appt={appt}
-                  col={col}
-                  others={others}
-                  moving={moving}
-                  onEdit={onEdit}
-                  onMove={onMoveAndShow}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+// ── Mobile Kanban — tab única com auto-switch ─────────────────────
+const COL_ABBREV: Record<string, string> = {
+  SCHEDULED: 'Agendado',
+  DONE: 'Compareceu',
+  CANCELLED: 'N. Comp.',
+  CONSULTANT: 'Consultor',
+}
+const COL_MOVE_LABEL: Record<string, string> = {
+  SCHEDULED: 'Agend.',
+  DONE: 'Comp.',
+  CANCELLED: 'N.Comp',
+  CONSULTANT: 'Consul.',
 }
 
-// ── Mobile Kanban Board (horizontal scroll) ──────────────────────
 function MobileKanban({
   filtered, moving, onEdit, onMove,
 }: {
@@ -333,74 +284,90 @@ function MobileKanban({
   onEdit: (a: Appointment) => void
   onMove: (id: string, status: string) => void
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null)
   const [activeIdx, setActiveIdx] = useState(0)
 
-  function scrollToColumn(idx: number) {
-    const container = scrollRef.current
-    if (!container) return
-    const colWidth = container.scrollWidth / COLUMNS.length
-    container.scrollTo({ left: colWidth * idx, behavior: 'smooth' })
-    setActiveIdx(idx)
-  }
-
-  function handleMoveAndShow(id: string, targetKey: string) {
+  function moveAndSwitch(id: string, targetKey: string) {
     onMove(id, targetKey)
     const idx = COLUMNS.findIndex(c => c.key === targetKey)
-    if (idx !== -1) setTimeout(() => scrollToColumn(idx), 80)
+    if (idx !== -1) setTimeout(() => setActiveIdx(idx), 120)
   }
 
-  // Track active column from scroll position
-  function handleScroll() {
-    const container = scrollRef.current
-    if (!container) return
-    const colWidth = container.scrollWidth / COLUMNS.length
-    const idx = Math.round(container.scrollLeft / colWidth)
-    setActiveIdx(Math.min(idx, COLUMNS.length - 1))
-  }
+  const col = COLUMNS[activeIdx]
+  const cards = filtered.filter(a => a.status === col.key)
+  const others = COLUMNS.filter(c => c.key !== col.key)
+  const groups = groupByDate(cards)
 
   return (
-    <div className="md:hidden space-y-2">
-      {/* Dot indicators */}
-      <div className="flex items-center justify-center gap-1.5">
-        {COLUMNS.map((col, i) => (
-          <button
-            key={col.key}
-            onClick={() => scrollToColumn(i)}
-            className={`transition-all rounded-full ${
-              activeIdx === i
-                ? 'w-5 h-2 bg-blue-500'
-                : 'w-2 h-2 bg-gray-300 dark:bg-slate-600'
-            }`}
-          />
-        ))}
+    <div className="md:hidden w-full space-y-3">
+      {/* Tab bar */}
+      <div className={`flex rounded-xl border-2 overflow-hidden ${colStyle[col.color]}`}>
+        {COLUMNS.map((c, i) => {
+          const count = filtered.filter(a => a.status === c.key).length
+          const isActive = i === activeIdx
+          return (
+            <button
+              key={c.key}
+              onClick={() => setActiveIdx(i)}
+              className={`flex-1 py-2.5 text-center transition-all ${
+                isActive
+                  ? headerStyle[c.color] + ' font-bold'
+                  : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
+              }`}
+            >
+              <span className="text-xs leading-none block">{COL_ABBREV[c.key]}</span>
+              <span className={`text-sm font-bold mt-0.5 block ${isActive ? '' : 'text-gray-500 dark:text-slate-400'}`}>{count}</span>
+            </button>
+          )
+        })}
       </div>
 
-      {/* Horizontal scroll board */}
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 px-1 scrollbar-none"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {COLUMNS.map((col) => (
-          <MobileColumnCard
-            key={col.key}
-            col={col}
-            cards={filtered.filter(a => a.status === col.key)}
-            moving={moving}
-            onEdit={onEdit}
-            onMove={onMove}
-            onMoveAndShow={handleMoveAndShow}
-          />
-        ))}
-        {/* trailing space so last column isn't flush right */}
-        <div className="flex-shrink-0 w-3" />
-      </div>
+      {/* Cards da coluna ativa */}
+      <div className="space-y-3 w-full">
+        {cards.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12 rounded-xl border-2 border-dashed border-gray-200 dark:border-slate-700">
+            <p className="text-sm text-gray-400 dark:text-slate-500">Nenhum contato nesta coluna</p>
+          </div>
+        )}
 
-      <p className="text-xs text-gray-400 dark:text-slate-500 text-center">
-        ← Deslize para ver todas as colunas
-      </p>
+        {groups.map(([dateKey, items]) => (
+          <div key={dateKey} className="space-y-2">
+            <div className={`text-xs font-semibold px-3 py-1.5 rounded-lg ${dateGroupStyle[col.color]}`}>
+              {formatDateGroup(dateKey + 'T12:00:00')}
+            </div>
+
+            {items.map((appt) => (
+              <div key={appt.id} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm w-full overflow-hidden">
+                {/* Info */}
+                <div className="px-4 py-3 space-y-1">
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{appt.customerName}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{appt.customerPhone}</p>
+                  {appt.notes && <p className="text-xs text-gray-400 dark:text-slate-500 italic truncate">{appt.notes}</p>}
+                </div>
+
+                {/* Ações */}
+                <div className="flex border-t border-gray-100 dark:border-slate-800">
+                  <button
+                    onClick={() => onEdit(appt)}
+                    className="flex-1 py-2.5 text-xs font-medium text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1"
+                  >
+                    <Pencil className="h-3.5 w-3.5" /> Editar
+                  </button>
+                  {others.map((o, oi) => (
+                    <button
+                      key={o.key}
+                      disabled={moving === appt.id}
+                      onClick={() => moveAndSwitch(appt.id, o.key)}
+                      className={`flex-1 py-2.5 text-xs font-bold transition-colors disabled:opacity-40 border-l border-gray-100 dark:border-slate-800 flex items-center justify-center ${badgeStyle[o.key]} hover:opacity-80`}
+                    >
+                      {COL_MOVE_LABEL[o.key]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

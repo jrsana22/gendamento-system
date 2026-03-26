@@ -267,79 +267,86 @@ function ApptSection({ title, appointments, expanded, setExpanded, updateStatus,
     <div className="space-y-3">
       <h2 className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">{title}</h2>
       {appointments.map((appt) => (
-        <div key={appt.id} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden">
-          {/* Card main row */}
-          <div className="px-4 py-3.5 space-y-2">
-            {/* Row 1: name + badge + expand */}
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-white leading-tight">{appt.customerName}</p>
-                <Badge variant={statusVariant[appt.status] ?? 'gray'}>
-                  {STATUS_LABELS[appt.status] ?? appt.status}
-                </Badge>
+        <div key={appt.id} className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden w-full">
+          <div className="px-4 py-3.5 space-y-2.5">
+
+            {/* Linha 1: nome + status + expand */}
+            <div className="flex items-start justify-between gap-2 min-w-0">
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-gray-900 dark:text-white leading-tight truncate">{appt.customerName}</p>
+                <div className="mt-1">
+                  <Badge variant={statusVariant[appt.status] ?? 'gray'}>
+                    {STATUS_LABELS[appt.status] ?? appt.status}
+                  </Badge>
+                </div>
               </div>
-              <Button size="sm" variant="ghost" className="flex-shrink-0 -mr-1"
-                onClick={() => setExpanded(expanded === appt.id ? null : appt.id)}>
+              <button
+                onClick={() => setExpanded(expanded === appt.id ? null : appt.id)}
+                className="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              >
                 {expanded === appt.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </Button>
+              </button>
             </div>
 
-            {/* Row 2: title + phone */}
-            <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-slate-400">
-              <span className="truncate">{appt.title}</span>
-              <span className="text-gray-300 dark:text-slate-700">·</span>
-              <span className="flex-shrink-0 text-xs">{appt.customerPhone}</span>
+            {/* Linha 2: título */}
+            <p className="text-sm text-gray-600 dark:text-slate-400 truncate">{appt.title}</p>
+
+            {/* Linha 3: data e lembretes */}
+            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-slate-400">
+              <span className="font-medium text-gray-800 dark:text-slate-200">{formatDateTime(appt.scheduledAt)}</span>
+              <span>{appt.notifications.filter((n) => n.status === 'SENT').length}/{appt.notifications.length} lembretes</span>
             </div>
 
-            {/* Row 3: date + lembretes + actions */}
-            <div className="flex items-center justify-between gap-2 pt-0.5">
-              <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">{formatDateTime(appt.scheduledAt)}</p>
-                <p className="text-xs text-gray-400 dark:text-slate-500">
-                  {appt.notifications.filter((n) => n.status === 'SENT').length}/{appt.notifications.length} lembretes
-                </p>
-              </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {appt.status === 'SCHEDULED' && (
-                  <>
-                    <Button size="sm" variant="ghost" title="Editar" onClick={() => onEdit(appt)}>
-                      <Pencil className="h-4 w-4 text-gray-500 dark:text-slate-400" />
-                    </Button>
-                    <Button size="sm" variant="ghost" title="Compareceu" onClick={() => updateStatus(appt.id, 'DONE')}>
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                    </Button>
-                    <Button size="sm" variant="ghost" title="Não compareceu" onClick={() => updateStatus(appt.id, 'CANCELLED')}>
-                      <XCircle className="h-4 w-4 text-yellow-600" />
-                    </Button>
-                  </>
-                )}
-                <Button size="sm" variant="ghost" onClick={() => onDelete(appt.id, appt.customerName)}>
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </Button>
-              </div>
+            {/* Linha 4: telefone */}
+            <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{appt.customerPhone}</p>
+
+            {/* Linha 5: ações */}
+            <div className="flex items-center gap-1.5 pt-1 border-t border-gray-100 dark:border-slate-800">
+              {appt.status === 'SCHEDULED' && (
+                <>
+                  <button onClick={() => onEdit(appt)} title="Editar"
+                    className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+                    <Pencil className="h-3.5 w-3.5" /> Editar
+                  </button>
+                  <button onClick={() => updateStatus(appt.id, 'DONE')} title="Compareceu"
+                    className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/60 transition-colors">
+                    <CheckCircle className="h-3.5 w-3.5" /> Comp.
+                  </button>
+                  <button onClick={() => updateStatus(appt.id, 'CANCELLED')} title="Não compareceu"
+                    className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium bg-yellow-50 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 transition-colors">
+                    <XCircle className="h-3.5 w-3.5" /> N.Comp
+                  </button>
+                </>
+              )}
+              <button onClick={() => onDelete(appt.id, appt.customerName)} title="Excluir"
+                className="h-8 w-8 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex-shrink-0">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
 
-          {/* Expanded notifications */}
+          {/* Lembretes expandidos */}
           {expanded === appt.id && (
             <div className="border-t border-gray-100 dark:border-slate-800 px-4 py-4 bg-gray-50 dark:bg-slate-800/50 space-y-3">
               {appt.notes && (
-                <p className="text-sm text-gray-600 dark:text-slate-300"><span className="font-medium">Obs:</span> {appt.notes}</p>
+                <p className="text-sm text-gray-600 dark:text-slate-300 break-words"><span className="font-medium">Obs:</span> {appt.notes}</p>
               )}
               <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Lembretes automáticos</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="space-y-2">
                 {appt.notifications.length === 0 ? (
                   <p className="text-sm text-gray-400 dark:text-slate-500">Nenhum lembrete agendado</p>
                 ) : (
                   appt.notifications.map((n) => (
-                    <div key={n.id} className="flex items-center justify-between bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 px-3 py-2">
-                      <div>
+                    <div key={n.id} className="flex items-center justify-between bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 px-3 py-2 gap-2">
+                      <div className="min-w-0">
                         <span className="text-sm font-medium text-gray-700 dark:text-slate-300">{NOTIF_LABELS[n.type]}</span>
-                        <p className="text-xs text-gray-400 dark:text-slate-500">{formatDateTime(n.scheduledAt)}</p>
+                        <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{formatDateTime(n.scheduledAt)}</p>
                       </div>
-                      <Badge variant={notifVariant[n.status] ?? 'gray'}>
-                        {NOTIF_STATUS_LABELS[n.status]}
-                      </Badge>
+                      <div className="flex-shrink-0">
+                        <Badge variant={notifVariant[n.status] ?? 'gray'}>
+                          {NOTIF_STATUS_LABELS[n.status]}
+                        </Badge>
+                      </div>
                     </div>
                   ))
                 )}

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
-  Calendar, Users, LayoutDashboard, LogOut, Bell,
+  Calendar, CalendarCheck, Users, LayoutDashboard, LogOut, Bell,
   KanbanSquare, UserCircle, Sun, Moon,
 } from 'lucide-react'
 import { WhatsAppStatus } from './WhatsAppStatus'
@@ -66,7 +66,7 @@ export function Sidebar({ role, name }: SidebarProps) {
         {/* Logo */}
         <div className="flex h-16 items-center gap-2.5 border-b border-gray-200 dark:border-slate-800 px-5">
           <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
-            <Calendar className="h-4 w-4 text-white" />
+            <CalendarCheck className="h-4 w-4 text-white" />
           </div>
           <span className="font-bold text-gray-900 dark:text-white text-sm tracking-tight">
             Agendamentos
@@ -141,7 +141,7 @@ export function Sidebar({ role, name }: SidebarProps) {
         {/* Logo */}
         <div className="flex items-center gap-2">
           <div className="h-7 w-7 rounded-lg bg-blue-600 flex items-center justify-center">
-            <Calendar className="h-3.5 w-3.5 text-white" />
+            <CalendarCheck className="h-3.5 w-3.5 text-white" />
           </div>
           <span className="font-bold text-gray-900 dark:text-white text-sm">Agendamentos</span>
         </div>

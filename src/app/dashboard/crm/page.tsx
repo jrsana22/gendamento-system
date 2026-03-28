@@ -44,21 +44,21 @@ const COLUMNS = [
 ]
 
 const colStyle: Record<string, string> = {
-  blue:  'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900',
-  green: 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900',
-  red:   'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900',
+  blue:  'bg-blue-100 dark:bg-blue-950/50 border-blue-300 dark:border-blue-800',
+  green: 'bg-green-100 dark:bg-green-950/50 border-green-300 dark:border-green-800',
+  red:   'bg-red-100 dark:bg-red-950/50 border-red-300 dark:border-red-800',
 }
 
 const colStyleOver: Record<string, string> = {
-  blue:  'bg-blue-100 dark:bg-blue-950/40 border-blue-400 dark:border-blue-600',
-  green: 'bg-green-100 dark:bg-green-950/40 border-green-400 dark:border-green-600',
-  red:   'bg-red-100 dark:bg-red-950/40 border-red-400 dark:border-red-600',
+  blue:  'bg-blue-200 dark:bg-blue-950/70 border-blue-400 dark:border-blue-600',
+  green: 'bg-green-200 dark:bg-green-950/70 border-green-400 dark:border-green-600',
+  red:   'bg-red-200 dark:bg-red-950/70 border-red-400 dark:border-red-600',
 }
 
 const headerStyle: Record<string, string> = {
-  blue:  'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-  green: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
-  red:   'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  blue:  'bg-blue-200 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300',
+  green: 'bg-green-200 dark:bg-green-900/60 text-green-800 dark:text-green-300',
+  red:   'bg-red-200 dark:bg-red-900/60 text-red-800 dark:text-red-300',
 }
 
 const moveChipStyle: Record<string, string> = {

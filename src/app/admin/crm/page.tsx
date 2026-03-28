@@ -23,16 +23,16 @@ const COLUMNS = [
 ]
 
 const colStyle: Record<string, string> = {
-  blue: 'bg-blue-50 border-blue-200',
-  green: 'bg-green-50 border-green-200',
-  red: 'bg-red-50 border-red-200',
-  purple: 'bg-purple-50 border-purple-200',
+  blue: 'bg-blue-100 border-blue-300 dark:bg-blue-950/50 dark:border-blue-800',
+  green: 'bg-green-100 border-green-300 dark:bg-green-950/50 dark:border-green-800',
+  red: 'bg-red-100 border-red-300 dark:bg-red-950/50 dark:border-red-800',
+  purple: 'bg-purple-100 border-purple-300 dark:bg-purple-950/50 dark:border-purple-800',
 }
 const headerStyle: Record<string, string> = {
-  blue: 'bg-blue-100 text-blue-700',
-  green: 'bg-green-100 text-green-700',
-  red: 'bg-red-100 text-red-700',
-  purple: 'bg-purple-100 text-purple-700',
+  blue: 'bg-blue-200 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300',
+  green: 'bg-green-200 text-green-800 dark:bg-green-900/60 dark:text-green-300',
+  red: 'bg-red-200 text-red-800 dark:bg-red-900/60 dark:text-red-300',
+  purple: 'bg-purple-200 text-purple-800 dark:bg-purple-900/60 dark:text-purple-300',
 }
 const badgeStyle: Record<string, string> = {
   SCHEDULED: 'bg-blue-100 text-blue-700',
@@ -41,10 +41,10 @@ const badgeStyle: Record<string, string> = {
   CONSULTANT: 'bg-purple-100 text-purple-700',
 }
 const dateGroupStyle: Record<string, string> = {
-  blue: 'bg-blue-200 text-blue-800',
-  green: 'bg-green-200 text-green-800',
-  red: 'bg-red-200 text-red-800',
-  purple: 'bg-purple-200 text-purple-800',
+  blue: 'bg-blue-300/70 text-blue-900 dark:bg-blue-800/50 dark:text-blue-200',
+  green: 'bg-green-300/70 text-green-900 dark:bg-green-800/50 dark:text-green-200',
+  red: 'bg-red-300/70 text-red-900 dark:bg-red-800/50 dark:text-red-200',
+  purple: 'bg-purple-300/70 text-purple-900 dark:bg-purple-800/50 dark:text-purple-200',
 }
 
 function formatDateGroup(dateStr: string) {

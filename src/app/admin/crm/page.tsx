@@ -101,7 +101,7 @@ export default function AdminCRMPage() {
   async function deleteAppointment() {
     if (!confirmDelete) return
     setDeleting(true)
-    const res = await fetch(`/api/appointments/${confirmDelete.id}`, { method: 'DELETE' })
+    const res = await fetch(`/api/admin/appointments/${confirmDelete.id}`, { method: 'DELETE' })
     setDeleting(false)
     setConfirmDelete(null)
     if (res.ok) { toast.success('Lead excluído'); fetchAppointments() }

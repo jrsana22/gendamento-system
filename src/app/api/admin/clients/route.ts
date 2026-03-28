@@ -17,7 +17,7 @@ export async function GET() {
 // POST /api/admin/clients - cria cliente + usuário
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { name, email, password, instanceName, evoUrl, apiKey, phone } = body
+  const { name, email, password, instanceName, evoUrl, apiKey, phone, agentWebhook } = body
 
   if (!name || !email || !password || !instanceName || !evoUrl || !apiKey) {
     return NextResponse.json({ error: 'Preencha todos os campos obrigatórios' }, { status: 400 })
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       password: hashedPassword,
       role: 'CLIENT',
       client: {
-        create: { name, instanceName, evoUrl, apiKey, phone },
+        create: { name, instanceName, evoUrl, apiKey, phone, agentWebhook: agentWebhook || null },
       },
     },
     include: { client: true },

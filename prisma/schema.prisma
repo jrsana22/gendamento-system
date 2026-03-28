@@ -25,6 +25,7 @@ model Client {
   evoUrl        String
   apiKey        String
   phone         String?
+  agentWebhook  String?       // URL do webhook do agente (n8n/IA) configurado para este cliente
   webhookToken  String        @unique @default(cuid()) // token para o n8n criar agendamentos
   userId        String        @unique
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)

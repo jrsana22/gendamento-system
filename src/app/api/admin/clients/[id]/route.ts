@@ -20,11 +20,11 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
 // PUT /api/admin/clients/:id - atualiza dados do cliente
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const { name, instanceName, evoUrl, apiKey, phone } = await req.json()
+  const { name, instanceName, evoUrl, apiKey, phone, agentWebhook } = await req.json()
 
   const client = await prisma.client.update({
     where: { id: params.id },
-    data: { name, instanceName, evoUrl, apiKey, phone },
+    data: { name, instanceName, evoUrl, apiKey, phone, agentWebhook: agentWebhook || null },
   })
 
   return NextResponse.json(client)

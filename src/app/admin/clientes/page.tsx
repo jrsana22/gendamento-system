@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Plus, Pencil, Trash2, X, Users, Copy, Check, Link2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Users, Copy, Check, Link2, Bot } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface Client {
@@ -13,6 +13,7 @@ interface Client {
   evoUrl: string
   apiKey: string
   phone: string | null
+  agentWebhook: string | null
   webhookToken: string
   user: { email: string }
   _count: { appointments: number }
@@ -22,6 +23,7 @@ interface Client {
 const EMPTY_FORM = {
   name: '', email: '', password: '',
   instanceName: '', evoUrl: '', apiKey: '', phone: '',
+  agentWebhook: '',
 }
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://agendamento.solucoesdeia.com'
@@ -48,9 +50,9 @@ export default function ClientesPage() {
     return `${APP_URL}/api/webhook/${token}`
   }
 
-  async function copyWebhook(token: string) {
-    await navigator.clipboard.writeText(webhookUrl(token))
-    setCopied(token)
+  async function copyText(text: string, key: string) {
+    await navigator.clipboard.writeText(text)
+    setCopied(key)
     toast.success('URL copiada!')
     setTimeout(() => setCopied(null), 2000)
   }
@@ -70,6 +72,7 @@ export default function ClientesPage() {
       evoUrl: c.evoUrl,
       apiKey: c.apiKey,
       phone: c.phone || '',
+      agentWebhook: c.agentWebhook || '',
     })
     setEditingId(c.id)
     setShowModal(true)
@@ -153,7 +156,7 @@ export default function ClientesPage() {
                 </div>
               </div>
 
-              {/* Webhook URL — o que o n8n vai usar */}
+              {/* Webhook do sistema — o n8n posta AQUI para criar agendamentos */}
               <div className="mt-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-800 p-3">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Link2 className="h-3.5 w-3.5 text-blue-600" />
@@ -166,10 +169,10 @@ export default function ClientesPage() {
                     {webhookUrl(c.webhookToken)}
                   </code>
                   <button
-                    onClick={() => copyWebhook(c.webhookToken)}
+                    onClick={() => copyText(webhookUrl(c.webhookToken), `sys-${c.id}`)}
                     className="flex-shrink-0 flex items-center gap-1.5 text-xs text-gray-600 dark:text-slate-400 hover:text-blue-600 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded px-3 py-2 transition-colors"
                   >
-                    {copied === c.webhookToken
+                    {copied === `sys-${c.id}`
                       ? <><Check className="h-3.5 w-3.5 text-green-600" /> Copiado</>
                       : <><Copy className="h-3.5 w-3.5" /> Copiar</>}
                   </button>
@@ -178,6 +181,31 @@ export default function ClientesPage() {
                   Configure no n8n: HTTP Request → POST → body: name, phone, scheduledAt, title
                 </p>
               </div>
+
+              {/* Webhook do agente — URL do fluxo n8n/IA deste cliente */}
+              {c.agentWebhook && (
+                <div className="mt-2 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-200 dark:border-purple-800/40 p-3">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Bot className="h-3.5 w-3.5 text-purple-600" />
+                    <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wide">
+                      Webhook do Agente (n8n/IA)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-xs text-purple-700 dark:text-purple-300 font-mono bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-800/40 rounded px-3 py-2 truncate">
+                      {c.agentWebhook}
+                    </code>
+                    <button
+                      onClick={() => copyText(c.agentWebhook!, `agent-${c.id}`)}
+                      className="flex-shrink-0 flex items-center gap-1.5 text-xs text-purple-600 hover:text-purple-800 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-800/40 rounded px-3 py-2 transition-colors"
+                    >
+                      {copied === `agent-${c.id}`
+                        ? <><Check className="h-3.5 w-3.5 text-green-600" /> Copiado</>
+                        : <><Copy className="h-3.5 w-3.5" /> Copiar</>}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -185,7 +213,7 @@ export default function ClientesPage() {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-xl">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-800">
               <h2 className="font-semibold text-gray-900 dark:text-white">
                 {editingId ? 'Editar cliente' : 'Novo cliente'}
@@ -214,6 +242,17 @@ export default function ClientesPage() {
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   required={!editingId} />
               </div>
+
+              <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide pt-1">Agente (n8n / IA)</p>
+              <Input
+                label="Webhook do Agente"
+                value={form.agentWebhook}
+                onChange={(e) => setForm({ ...form, agentWebhook: e.target.value })}
+                placeholder="https://n8n.exemplo.com/webhook/abc123"
+              />
+              <p className="text-xs text-gray-400 dark:text-slate-500 -mt-2">
+                URL do fluxo n8n/IA deste cliente. Os agendamentos enviados por ele virão para o painel deste cliente.
+              </p>
 
               <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide pt-1">Evolution API</p>
               <Input label="URL da Evolution *" value={form.evoUrl}

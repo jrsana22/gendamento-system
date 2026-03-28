@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback, useMemo } from 'react'
-import { Phone, User, Search, ChevronDown, ChevronUp, Users } from 'lucide-react'
+import { Phone, User, Search, ChevronDown, ChevronUp, Users, Trash2, AlertTriangle } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 interface Appointment {
   id: string
@@ -76,6 +77,8 @@ export default function AdminCRMPage() {
   const [activeTab, setActiveTab] = useState(0)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const fetchAppointments = useCallback(async () => {
     const res = await fetch('/api/admin/appointments')
@@ -94,6 +97,16 @@ export default function AdminCRMPage() {
     }
     return Array.from(map.entries()).sort(([, a], [, b]) => a.localeCompare(b))
   }, [appointments])
+
+  async function deleteAppointment() {
+    if (!confirmDelete) return
+    setDeleting(true)
+    const res = await fetch(`/api/appointments/${confirmDelete.id}`, { method: 'DELETE' })
+    setDeleting(false)
+    setConfirmDelete(null)
+    if (res.ok) { toast.success('Lead excluído'); fetchAppointments() }
+    else toast.error('Erro ao excluir')
+  }
 
   async function moveCard(id: string, newStatus: string) {
     setMoving(id)
@@ -226,11 +239,20 @@ export default function AdminCRMPage() {
                     <div className="flex flex-col gap-2">
                       {items.map((appt) => (
                         <div key={appt.id} className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm p-3 space-y-2">
-                          <div className="flex items-start gap-2">
-                            <User className="h-4 w-4 text-gray-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">
-                              {appt.customerName}
-                            </span>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-2 min-w-0">
+                              <User className="h-4 w-4 text-gray-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm font-semibold text-gray-900 dark:text-white leading-tight truncate">
+                                {appt.customerName}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => setConfirmDelete({ id: appt.id, name: appt.customerName })}
+                              className="flex-shrink-0 text-gray-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                              title="Excluir lead"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
                             <Phone className="h-3 w-3 flex-shrink-0" />
@@ -303,9 +325,17 @@ export default function AdminCRMPage() {
                   <div className="flex flex-col gap-2">
                     {items.map((appt) => (
                       <div key={appt.id} className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm p-3 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <User className="h-4 w-4 text-gray-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm font-semibold text-gray-900 dark:text-white">{appt.customerName}</span>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2 min-w-0">
+                            <User className="h-4 w-4 text-gray-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">{appt.customerName}</span>
+                          </div>
+                          <button
+                            onClick={() => setConfirmDelete({ id: appt.id, name: appt.customerName })}
+                            className="flex-shrink-0 text-gray-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
                           <Phone className="h-3 w-3 flex-shrink-0" />{appt.customerPhone}
@@ -333,6 +363,43 @@ export default function AdminCRMPage() {
           </div>
         )
       })}
+      {/* Modal de confirmação de exclusão */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-800">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/50 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-base">Excluir lead</h3>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">Esta ação não pode ser desfeita.</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700 dark:text-slate-300">
+                Tem certeza que deseja excluir <span className="font-semibold">{confirmDelete.name}</span>?
+              </p>
+              <div className="flex gap-3 pt-1">
+                <button
+                  onClick={() => setConfirmDelete(null)}
+                  disabled={deleting}
+                  className="flex-1 py-2 px-4 rounded-lg text-sm font-medium border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={deleteAppointment}
+                  disabled={deleting}
+                  className="flex-1 py-2 px-4 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50"
+                >
+                  {deleting ? 'Excluindo...' : 'Excluir'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

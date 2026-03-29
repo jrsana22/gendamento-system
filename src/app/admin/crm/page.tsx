@@ -165,9 +165,9 @@ export default function AdminCRMPage() {
 
         {/* Date filters */}
         <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
-          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" title="De" />
+          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-gray-900 dark:text-white" title="De" />
         <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
-          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" title="Até" />
+          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-gray-900 dark:text-white" title="Até" />
 
         {/* Search */}
         <div className="relative w-60">

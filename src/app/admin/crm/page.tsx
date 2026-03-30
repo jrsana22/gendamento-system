@@ -154,7 +154,7 @@ export default function AdminCRMPage() {
           <select
             value={agentFilter}
             onChange={(e) => setAgentFilter(e.target.value)}
-            className="pl-9 pr-8 py-2 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 appearance-none"
+            className="pl-9 pr-8 py-2 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-slate-800 appearance-none"
           >
             <option value="all">Todos os agentes</option>
             {agents.map(([id, name]) => (
@@ -165,9 +165,9 @@ export default function AdminCRMPage() {
 
         {/* Date filters */}
         <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
-          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-gray-900 dark:text-white" title="De" />
+          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" title="De" />
         <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
-          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-gray-900 dark:text-white" title="Até" />
+          className="py-2 px-3 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white" title="Até" />
 
         {/* Search */}
         <div className="relative w-60">
@@ -177,7 +177,7 @@ export default function AdminCRMPage() {
             placeholder="Buscar por nome ou telefone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-slate-800"
           />
         </div>
       </div>
@@ -221,7 +221,7 @@ export default function AdminCRMPage() {
             <div key={col.key} className={`rounded-xl border-2 ${colStyle[col.color]} flex flex-col`}>
               <div className={`rounded-t-xl px-4 py-3 flex items-center justify-between ${headerStyle[col.color]}`}>
                 <span className="font-semibold text-sm">{col.label}</span>
-                <span className="text-xs font-bold bg-white dark:bg-slate-900 bg-opacity-60 rounded-full px-2 py-0.5">
+                <span className="text-xs font-bold bg-white/60 dark:bg-slate-700/60 rounded-full px-2 py-0.5">
                   {cards.length}
                 </span>
               </div>
@@ -238,7 +238,7 @@ export default function AdminCRMPage() {
                     </div>
                     <div className="flex flex-col gap-2">
                       {items.map((appt) => (
-                        <div key={appt.id} className="bg-white dark:bg-slate-900 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm p-3 space-y-2">
+                        <div key={appt.id} className="bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm p-3 space-y-2">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-start gap-2 min-w-0">
                               <User className="h-4 w-4 text-gray-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />

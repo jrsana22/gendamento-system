@@ -165,12 +165,12 @@ export default function ClientesPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 text-xs text-blue-700 font-mono bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded px-3 py-2 truncate">
+                  <code className="flex-1 text-xs text-blue-700 font-mono bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded px-3 py-2 truncate">
                     {webhookUrl(c.webhookToken)}
                   </code>
                   <button
                     onClick={() => copyText(webhookUrl(c.webhookToken), `sys-${c.id}`)}
-                    className="flex-shrink-0 flex items-center gap-1.5 text-xs text-gray-600 dark:text-slate-400 hover:text-blue-600 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded px-3 py-2 transition-colors"
+                    className="flex-shrink-0 flex items-center gap-1.5 text-xs text-gray-600 dark:text-slate-400 hover:text-blue-600 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded px-3 py-2 transition-colors"
                   >
                     {copied === `sys-${c.id}`
                       ? <><Check className="h-3.5 w-3.5 text-green-600" /> Copiado</>
@@ -192,12 +192,12 @@ export default function ClientesPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <code className="flex-1 text-xs text-purple-700 dark:text-purple-300 font-mono bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-800/40 rounded px-3 py-2 truncate">
+                    <code className="flex-1 text-xs text-purple-700 dark:text-purple-300 font-mono bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded px-3 py-2 truncate">
                       {c.agentWebhook}
                     </code>
                     <button
                       onClick={() => copyText(c.agentWebhook!, `agent-${c.id}`)}
-                      className="flex-shrink-0 flex items-center gap-1.5 text-xs text-purple-600 hover:text-purple-800 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-800/40 rounded px-3 py-2 transition-colors"
+                      className="flex-shrink-0 flex items-center gap-1.5 text-xs text-purple-600 hover:text-purple-800 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/40 rounded px-3 py-2 transition-colors"
                     >
                       {copied === `agent-${c.id}`
                         ? <><Check className="h-3.5 w-3.5 text-green-600" /> Copiado</>

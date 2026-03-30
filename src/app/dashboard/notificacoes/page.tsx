@@ -2,7 +2,6 @@ import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { NOTIF_LABELS, NOTIF_STATUS_LABELS } from '@/lib/utils'
 import { Bell, Clock, CheckCircle, XCircle } from 'lucide-react'
-import { FixNotificationsButton } from './FixNotificationsButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,9 +41,40 @@ const statusDot: Record<string, string> = {
   FAILED: 'bg-red-500',
 }
 
+async function ensureNotifications(clientId: string) {
+  const now = new Date()
+  const ALL_TYPES = ['24H', '3H', '1H', '15MIN']
+  const OFFSETS: Record<string, number> = { '24H': 24 * 60, '3H': 3 * 60, '1H': 60, '15MIN': 15 }
+
+  const appointments = await prisma.appointment.findMany({
+    where: { clientId, scheduledAt: { gt: now } },
+    include: { notifications: { select: { type: true } } },
+  })
+
+  for (const appt of appointments) {
+    const existingTypes = new Set(appt.notifications.map((n) => n.type))
+    const missingTypes = ALL_TYPES.filter((t) => !existingTypes.has(t))
+    if (missingTypes.length === 0) continue
+
+    await prisma.notification.createMany({
+      data: missingTypes.map((type) => {
+        const notifAt = new Date(appt.scheduledAt.getTime() - OFFSETS[type] * 60 * 1000)
+        return {
+          appointmentId: appt.id,
+          type,
+          scheduledAt: notifAt,
+          status: notifAt > now ? 'PENDING' : 'FAILED',
+        }
+      }),
+    })
+  }
+}
+
 export default async function NotificacoesPage() {
   const session = await getSession()
   if (!session?.clientId) return null
+
+  await ensureNotifications(session.clientId)
 
   const notifications = await prisma.notification.findMany({
     where: { appointment: { clientId: session.clientId } },
@@ -87,8 +117,6 @@ export default async function NotificacoesPage() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Notificações</h1>
         <p className="text-gray-500 dark:text-slate-400 mt-1">Lembretes via WhatsApp por lead e agendamento</p>
       </div>
-      <FixNotificationsButton />
-
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 md:gap-4">
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-yellow-200 dark:border-yellow-900/50 p-4 flex items-center gap-3">

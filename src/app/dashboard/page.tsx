@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/Button'
 import { Calendar, Bell, Clock, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { UpcomingAppointments } from '@/components/UpcomingAppointments'
-import { FailedNotifAlert } from '@/components/FailedNotifAlert'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,7 +39,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <FailedNotifAlert />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>

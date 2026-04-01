@@ -32,6 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   const newDate = scheduledAt ? new Date(scheduledAt) : appt.scheduledAt
   const dateChanged = newDate.getTime() !== appt.scheduledAt.getTime()
+  const statusChanged = status && status !== appt.status
 
   const updated = await prisma.appointment.update({
     where: { id: params.id },
@@ -44,6 +45,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (status !== 'CANCELLED' && newDate > new Date()) {
       await scheduleNotifications(params.id, newDate)
     }
+  }
+
+  // Se status mudou para SCHEDULED (de DONE ou CANCELLED), regenera lembretes
+  if (statusChanged && status === 'SCHEDULED' && newDate > new Date()) {
+    await scheduleNotifications(params.id, newDate)
   }
 
   return NextResponse.json(updated)

@@ -20,11 +20,29 @@ export default function NovoAgendamentoPage() {
   })
 
   function set(field: string, value: string) {
-    setForm((f) => ({ ...f, [field]: value }))
+    if (field === 'customerPhone') {
+      // Remove tudo que não é número
+      const cleaned = value.replace(/\D/g, '')
+      // Força o 55 na frente se não tiver
+      const withCode = cleaned.startsWith('55') ? cleaned : '55' + cleaned
+      // Limita a 13 dígitos (55 + 11 dígitos do número)
+      const formatted = withCode.slice(0, 13)
+      setForm((f) => ({ ...f, [field]: formatted }))
+    } else {
+      setForm((f) => ({ ...f, [field]: value }))
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    // Validar telefone
+    const phone = form.customerPhone.replace(/\D/g, '')
+    if (!phone.startsWith('55') || phone.length !== 13) {
+      toast.error('WhatsApp deve ser no formato: 5511999999999 (código do país + número)')
+      return
+    }
+
     setSaving(true)
 
     const res = await fetch('/api/appointments', {
@@ -32,6 +50,7 @@ export default function NovoAgendamentoPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...form,
+        customerPhone: phone,
         scheduledAt: new Date(form.scheduledAt).toISOString(),
       }),
     })

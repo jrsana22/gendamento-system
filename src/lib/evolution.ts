@@ -53,19 +53,6 @@ export function buildMessage(
 ): string {
   const firstName = customerName.split(' ')[0]
 
-  const timeStr = scheduledAt.toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'America/Sao_Paulo',
-  })
-
-  const dateStr = scheduledAt.toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    day: '2-digit',
-    month: 'long',
-    timeZone: 'America/Sao_Paulo',
-  })
-
   const messages: Record<typeof type, string> = {
     // 24h antes — lembrete tranquilo, reforça que está tudo confirmado
     '24H': [
@@ -74,7 +61,6 @@ export function buildMessage(
       `Passando pra te lembrar que amanhã é o nosso dia! 🗓️`,
       ``,
       `📌 *${appointmentTitle}*`,
-      `🕐 ${dateStr} às *${timeStr}*`,
       ``,
       `Estamos preparando tudo com cuidado pra você. Qualquer dúvida antes de chegar, é só falar. Até amanhã!`,
     ].join('\n'),
@@ -86,16 +72,15 @@ export function buildMessage(
       `Daqui a pouco nos encontramos! Estamos te esperando com tudo pronto. 🙌`,
       ``,
       `📌 *${appointmentTitle}*`,
-      `🕐 Hoje às *${timeStr}*`,
       ``,
       `Se precisar de algo antes de chegar, é só chamar aqui. Até logo!`,
     ].join('\n'),
 
     // 1h antes — direto, animado
     '1H': [
-      `${firstName}, falta só 1 hora! ⏳`,
+      `${firstName}, já tá chegando! ⏳`,
       ``,
-      `📌 *${appointmentTitle}* às *${timeStr}*`,
+      `📌 *${appointmentTitle}*`,
       ``,
       `A gente tá aqui, te esperando. Qualquer imprevisto de última hora me avisa, tá? Até já! 🤝`,
     ].join('\n'),
@@ -104,7 +89,7 @@ export function buildMessage(
     '15MIN': [
       `Oi, ${firstName}! Estamos quase lá. ⏰`,
       ``,
-      `Nosso encontro começa em *15 minutos* — às *${timeStr}*.`,
+      `📌 *${appointmentTitle}*`,
       ``,
       `Tudo certo aí? Qualquer coisa é só falar. Até já! 😊`,
     ].join('\n'),

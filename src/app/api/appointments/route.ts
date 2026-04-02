@@ -25,11 +25,20 @@ export async function POST(req: NextRequest) {
   const session = await getSession()
   if (!session?.clientId) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
 
-  const { title, customerName, customerPhone, scheduledAt, notes } = await req.json()
+  let { title, customerName, customerPhone, scheduledAt, notes } = await req.json()
 
   if (!title || !customerName || !customerPhone || !scheduledAt) {
     return NextResponse.json({ error: 'Preencha todos os campos obrigatórios' }, { status: 400 })
   }
+
+  // Validar e formatar telefone
+  const cleaned = String(customerPhone).replace(/\D/g, '')
+  if (!cleaned.startsWith('55') || cleaned.length !== 13) {
+    return NextResponse.json({
+      error: 'WhatsApp inválido. Formato correto: 5511999999999 (código do país + número)'
+    }, { status: 400 })
+  }
+  customerPhone = cleaned
 
   const date = new Date(scheduledAt)
   if (date <= new Date()) {

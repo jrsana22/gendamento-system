@@ -2,6 +2,7 @@ import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { NOTIF_LABELS, NOTIF_STATUS_LABELS } from '@/lib/utils'
 import { Bell, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { LeadActions } from './LeadActions'
 
 export const dynamic = 'force-dynamic'
 
@@ -191,20 +192,23 @@ export default async function NotificacoesPage() {
                             </p>
                           </div>
                         </div>
-                        <span className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full ${
-                          allSent
-                            ? 'bg-green-50 text-green-700'
-                            : hasFailed
-                            ? 'bg-red-50 text-red-700'
-                            : 'bg-yellow-50 text-yellow-700'
-                        }`}>
-                          {allSent
-                            ? <CheckCircle className="h-3.5 w-3.5" />
-                            : hasFailed
-                            ? <XCircle className="h-3.5 w-3.5" />
-                            : <Clock className="h-3.5 w-3.5" />}
-                          {sentCount}/{total} enviados
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full ${
+                            allSent
+                              ? 'bg-green-50 text-green-700'
+                              : hasFailed
+                              ? 'bg-red-50 text-red-700'
+                              : 'bg-yellow-50 text-yellow-700'
+                          }`}>
+                            {allSent
+                              ? <CheckCircle className="h-3.5 w-3.5" />
+                              : hasFailed
+                              ? <XCircle className="h-3.5 w-3.5" />
+                              : <Clock className="h-3.5 w-3.5" />}
+                            {sentCount}/{total} enviados
+                          </span>
+                          <LeadActions appointmentId={appt.id} />
+                        </div>
                       </div>
 
                       {/* Notification columns */}

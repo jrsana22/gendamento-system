@@ -1,53 +1,21 @@
-name: Disparar Notificações
-
-on:
-  schedule:
-    - cron: '*/5 * * * *'
-  workflow_dispatch:
-
-concurrency:
-  group: notifications
-  cancel-in-progress: false
-
 jobs:
   notify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
     steps:
-      - name: Enviar lembretes com intervalo de 30s entre cada um
+      - name: Chamar endpoint de notificações (1 chamada apenas)
         run: |
-          MAX=100
-          COUNT=0
+          response=$(curl -s -w "\n%{http_code}" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            "https://agendamento.solucoesdeia.com/api/cron/notifications")
 
-          while [ $COUNT -lt $MAX ]; do
-            response=$(curl -s -w "\n%{http_code}" \
-              -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
-              "https://agendamento.solucoesdeia.com/api/cron/notifications")
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | head -1)
 
-            http_code=$(echo "$response" | tail -1)
-            body=$(echo "$response" | head -1)
+          echo "HTTP $http_code"
+          echo "$body"
 
-            echo "[$COUNT] HTTP $http_code | $body"
-
-            if [ "$http_code" != "200" ]; then
-              echo "Erro no endpoint (HTTP $http_code). Abortando."
-              exit 1
-            fi
-
-            remaining=$(echo "$body" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('remaining', 0))" 2>/dev/null || echo "0")
-            sent=$(echo "$body" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('sent', 0))" 2>/dev/null || echo "0")
-
-            if [ "$remaining" -eq "0" ] && [ "$sent" -eq "0" ]; then
-              echo "Nenhum lembrete pendente. Concluído."
-              break
-            fi
-
-            COUNT=$((COUNT + 1))
-
-            if [ "$remaining" -gt "0" ]; then
-              echo "Aguardando 30s antes do próximo envio... ($remaining restantes)"
-              sleep 30
-            fi
-          done
-
-          echo "Total de envios: $COUNT"
+          if [ "$http_code" != "200" ]; then
+            echo "Erro no endpoint (HTTP $http_code)."
+            exit 1
+          fi
